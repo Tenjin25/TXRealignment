@@ -13,17 +13,34 @@ def normalize_county_name(name):
 def aggregate_single_precinct_file(filepath, year):
     """
     Aggregate a single precinct-level CSV file to county-level data
-    (for files like 20221108__tx__general__precinct.csv)
+    (for files like 20221108__tx__general__precinct.csv or VTD-level files)
     """
     print(f"  Aggregating single precinct file for {year}...")
     
     try:
         df = pd.read_csv(filepath)
         
+        # Normalize column names to lowercase
+        df.columns = df.columns.str.lower()
+        
         # Ensure county column exists
         if 'county' not in df.columns:
             print(f"  Warning: No 'county' column in {filepath}")
             return None
+        
+        # Normalize candidate column name (some files use 'name', others 'candidate')
+        if 'name' in df.columns and 'candidate' not in df.columns:
+            df['candidate'] = df['name']
+        
+        # Normalize party abbreviations to full names for consistency
+        party_map = {
+            'D': 'DEM',
+            'R': 'REP',
+            'L': 'LIB',
+            'G': 'GRN',
+            'W': 'WI'
+        }
+        df['party'] = df['party'].map(lambda x: party_map.get(str(x).strip(), str(x).strip()) if pd.notna(x) else x)
         
         # Convert votes to numeric (fixes string concatenation bug)
         df['votes'] = pd.to_numeric(df['votes'], errors='coerce').fillna(0).astype(int)
@@ -268,9 +285,13 @@ def process_texas_election_data():
                     print(f"Warning: Could not aggregate precinct data for {year}, skipping")
                     continue
             elif filepath.exists():
-                # Check if it's a precinct file or county file
-                if '__precinct' in str(filepath):
-                    # Single precinct file - aggregate it
+                # Read the file first to check its structure
+                temp_df = pd.read_csv(filepath, nrows=5)
+                temp_df.columns = temp_df.columns.str.lower()
+                
+                # Check if it's precinct-level data (has vtd/precinct column) or county-level
+                if 'vtd' in temp_df.columns or 'precinct' in temp_df.columns or '__precinct' in str(filepath):
+                    # Precinct-level file - aggregate it
                     df = aggregate_single_precinct_file(filepath, year)
                     if df is None:
                         print(f"Warning: Could not aggregate precinct file for {year}, skipping")
