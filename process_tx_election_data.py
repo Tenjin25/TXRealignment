@@ -242,8 +242,8 @@ def process_texas_election_data():
         2014: "2014/counties/20141104__tx__general__county.csv",
         2016: "20161108__tx__general__county.csv",
         2018: "20181106__tx__general__county.csv",
-        2020: "20201103__tx__general__precinct.csv",  # Single precinct file
-        2022: "20221108__tx__general__precinct.csv",  # Single precinct file
+        2020: "20201103__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
+        2022: "20221108__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
         2024: "2024/counties",   # Precinct-level data in directory
     }
     
