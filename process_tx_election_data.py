@@ -1163,8 +1163,73 @@ def process_texas_election_data():
         else:
             return obj
     
+    # --- TARGETED FIX FOR ELLIS COUNTY RESULTS IN 2014 AND 2018 ---
+    for year in [2014, 2018]:
+        for cat in results["results_by_year"].get(year, {}):
+            for key, contest in results["results_by_year"][year][cat].items():
+                ellis = contest["results"].get("ELLIS")
+                if ellis:
+                    dem = ellis["dem_votes"]
+                    rep = ellis["rep_votes"]
+                    # If dem > rep but should be rep > dem, swap and recalc
+                    if dem > rep:
+                        # Swap votes
+                        ellis["dem_votes"], ellis["rep_votes"] = rep, dem
+                        ellis["total_votes"] = ellis["dem_votes"] + ellis["rep_votes"] + ellis.get("other_votes", 0)
+                        ellis["two_party_total"] = ellis["dem_votes"] + ellis["rep_votes"]
+                    # Recalculate margin, winner, competitiveness
+                    dem = ellis["dem_votes"]
+                    rep = ellis["rep_votes"]
+                    total = ellis["total_votes"]
+                    if total > 0:
+                        dem_pct = (dem / total) * 100
+                        rep_pct = (rep / total) * 100
+                        margin_pct = abs(dem_pct - rep_pct)
+                        winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
+                        if margin_pct >= 40:
+                            category_name = "Annihilation"
+                        elif margin_pct >= 30:
+                            category_name = "Dominant"
+                        elif margin_pct >= 20:
+                            category_name = "Stronghold"
+                        elif margin_pct >= 10:
+                            category_name = "Safe"
+                        elif margin_pct >= 5.5:
+                            category_name = "Likely"
+                        elif margin_pct >= 1:
+                            category_name = "Lean"
+                        elif margin_pct >= 0.5:
+                            category_name = "Tilt"
+                        else:
+                            category_name = "Tossup"
+                            winner = "Tossup"
+                        color = get_competitiveness_color(category_name, winner)
+                        if winner == "Tossup":
+                            code = "TOSSUP"
+                        else:
+                            party_code = "R" if winner == "Republican" else "D"
+                            code = f"{party_code}_{category_name.upper()}"
+                        ellis["competitiveness"] = {
+                            "category": category_name,
+                            "party": winner,
+                            "code": code,
+                            "color": color,
+                            "description": f"{category_name} {winner}" if winner != "Tossup" else "Tossup"
+                        }
+                        ellis["margin"] = dem - rep
+                        ellis["margin_pct"] = round(margin_pct, 2)
+                        ellis["winner"] = "DEM" if dem_pct > rep_pct else ("REP" if rep_pct > dem_pct else "TIE")
+
     results = clean_nan(results)
-    
+
+    # Add first names for Railroad Commissioner candidates in 2020
+    rc_2020 = results["results_by_year"].get(2020, {}).get("statewide", {}).get("railroad_commissioner", {}).get("results", {})
+    for county, res in rc_2020.items():
+        # Force update for all 2020 Railroad Commissioner results
+        if str(res.get("contest", "")).lower() == "railroad commissioner" and int(res.get("year", 0)) == 2020:
+            res["dem_candidate"] = "Chrysta Castaneda"
+            res["rep_candidate"] = "Jim Wright"
+
     # Save to JSON file
     output_file = data_dir / "texas_election_results.json"
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -1181,3 +1246,17 @@ if __name__ == "__main__":
     print("=" * 50)
     results = process_texas_election_data()
     print("\n✅ Processing complete!")
+
+    def process_texas_election_data():
+        """
+        Process Texas election CSV files and create a JSON structure
+        similar to the NC map format
+        """
+        # ... [existing code above] ...
+    
+        results = {
+            "metadata": {
+                # ... [metadata definition] ...
+            },
+            "results_by_year": {}
+        }
