@@ -41,30 +41,59 @@ def get_full_candidate_name(last_name, year, office, party):
         return None
     
     last_name = str(last_name).strip()
+    office_lower = office.lower()
+    last_lower = last_name.lower()
+    party_upper = str(party).upper() if party else ''
     
     # 2024 candidates
     if year == 2024:
-        if 'president' in office.lower():
-            if last_name.lower() in ['harris', 'kamala']:
+        if 'president' in office_lower:
+            if last_lower in ['harris', 'kamala']:
                 return 'Kamala Harris'
-            elif last_name.lower() in ['trump', 'donald']:
+            elif last_lower in ['trump', 'donald']:
                 return 'Donald Trump'
-        elif 'sen' in office.lower():  # Matches "U.S. Sen", "Senate", etc.
-            if last_name.lower() in ['allred', 'colin']:
+        elif 'sen' in office_lower:  # Matches "U.S. Sen", "Senate", etc.
+            if last_lower in ['allred', 'colin']:
                 return 'Colin Allred'
-            elif last_name.lower() in ['cruz', 'ted']:
+            elif last_lower in ['cruz', 'ted']:
                 return 'Ted Cruz'
-        elif 'railroad' in office.lower():
-            if last_name.lower() == 'craddick':
+        elif 'railroad' in office_lower:
+            if last_lower == 'craddick':
                 return 'Christi Craddick'
-            elif last_name.lower() == 'culbert':
+            elif last_lower == 'culbert':
                 return 'Katherine Culbert'
+        # 2024 Judicial
+        elif 'supreme court' in office_lower or 'sup ct' in office_lower:
+            if last_lower == 'bland':
+                return 'Jane Bland'
+            elif last_lower == 'blacklock':
+                return 'Jimmy Blacklock'
+            elif last_lower == 'devine':
+                return 'John Devine'
+            elif last_lower == 'goldstein':
+                return 'Nancy Goldstein'
+            elif last_lower == 'roberson':
+                return 'Amy Roberson'
+            elif last_lower == 'jones':
+                return 'Christine Vinh Jones'
+            elif last_lower == 'weems':
+                return 'Bonnie Lee Goldstein'
+        elif 'criminal appeals' in office_lower or 'cca' in office_lower:
+            if last_lower == 'schenck':
+                return 'David Schenck'
+            elif last_lower == 'taylor':
+                return 'Nancy DeLeon-Taylor'
+            elif last_lower == 'parker':
+                return 'Gina Parker'
+            elif last_lower == 'mulder':
+                return 'Holly Garza Mulder'
+            elif last_lower == 'anyiam':
+                return 'Chika Anyiam'
+            elif last_lower == 'finley':
+                return 'Lee Finley'
     
-    # 2022 statewide candidates
+    # 2022 candidates
     elif year == 2022:
-        office_lower = office.lower()
-        last_lower = last_name.lower()
-        
         if 'land' in office_lower:
             if last_lower == 'buckingham':
                 return 'Dawn Buckingham'
@@ -74,13 +103,11 @@ def get_full_candidate_name(last_name, year, office, party):
                 return 'Alfred Menger'
             elif last_lower == 'molison':
                 return 'Michael Molison'
-        
         elif 'ag' in office_lower or 'agriculture' in office_lower:
             if last_lower == 'miller':
                 return 'Sid Miller'
             elif last_lower == 'hays':
                 return 'Susan Hays'
-        
         elif 'rr' in office_lower or 'railroad' in office_lower:
             if last_lower == 'christian':
                 return 'Wayne Christian'
@@ -90,6 +117,96 @@ def get_full_candidate_name(last_name, year, office, party):
                 return 'Hunter Crow'
             elif last_lower == 'diez':
                 return 'Jaime Diez'
+    
+    # 2020 candidates
+    elif year == 2020:
+        # 2020 Judicial
+        if 'supreme court' in office_lower or 'sup ct' in office_lower:
+            if last_lower == 'hecht':
+                return 'Nathan Hecht'
+            elif last_lower == 'meachum':
+                return 'Amy Clark Meachum'
+            elif last_lower == 'ash':
+                return 'Mark Ash'
+            elif last_lower == 'bland':
+                return 'Jane Bland'
+            elif last_lower == 'cheng':
+                return 'Kathy Cheng'
+            elif last_lower == 'boyd':
+                return 'Jeff Boyd'
+            elif last_lower == 'williams':
+                return 'Staci Williams'
+            elif last_lower == 'strange':
+                return 'William Bryan Strange III'
+            elif last_lower == 'busby':
+                return 'Brett Busby'
+            elif last_lower == 'triana':
+                return 'Gisela Triana'
+            elif last_lower == 'oxford':
+                return 'Tom Oxford'
+        elif 'criminal appeals' in office_lower or 'cca' in office_lower:
+            if last_lower == 'richardson':
+                return 'Bert Richardson'
+            elif last_lower in ['davis frizell', 'frizell']:
+                return 'Elizabeth Davis Frizell'
+            elif last_lower == 'yeary':
+                return 'David Newell'
+            elif last_lower == 'clinton':
+                return 'Tina Clinton'
+            elif last_lower == 'newell':
+                return 'David Newell'
+            elif last_lower == 'birmingham':
+                return 'Brandon Birmingham'
+    
+    # 2014 candidates  
+    elif year == 2014:
+        # 2014 Judicial
+        if 'supreme court' in office_lower or 'sup ct' in office_lower:
+            if last_lower == 'hecht':
+                return 'Nathan Hecht'
+            elif last_lower == 'moody':
+                return 'William Moody'
+            elif last_lower == 'oxford':
+                return 'Tom Oxford'
+            elif last_lower == 'brown':
+                return 'Jeff Brown'
+            elif last_lower == 'meyers':
+                return 'Larry Meyers'
+            elif last_lower == 'ash':
+                return 'Mark Ash'
+            elif last_lower == 'boyd':
+                return 'Jeff Boyd'
+            elif last_lower == 'benavides':
+                return 'Joe Benavides'
+            elif last_lower == 'waterbury':
+                return 'Ben Waterbury'
+            elif last_lower == 'fulton':
+                return 'Don Fulton'
+            elif last_lower == 'johnson':
+                return 'Phil Johnson'
+            elif last_lower == 'chisholm':
+                return 'Jim Chisholm'
+            elif last_lower == 'koelsch':
+                return 'Charles Koelsch'
+        elif 'criminal appeals' in office_lower or 'cca' in office_lower:
+            if last_lower == 'richardson':
+                return 'Bert Richardson'
+            elif last_lower == 'granberg':
+                return 'John Granberg'
+            elif last_lower == 'bennett':
+                return 'Mark Bennett'
+            elif last_lower == 'yeary':
+                return 'David Newell'
+            elif last_lower == 'parker':
+                return 'Quanah Parker'
+            elif last_lower == 'sanders-castro':
+                return 'Emily Sanders-Castro'
+            elif last_lower == 'newell':
+                return 'David Newell'
+            elif last_lower == 'altgelt':
+                return 'George Altgelt'
+            elif last_lower == 'strange':
+                return 'William Bryan Strange III'
     
     # For other years/candidates, return the last name as-is
     return last_name
@@ -355,8 +472,21 @@ def process_texas_election_data():
     }
     
     # Supplemental files to add additional races (processed after main files)
+    # These add judicial races and other missing statewide contests
     supplemental_files = {
-        2022: "2022_General_Election_Returns-aligned.csv",  # VTD data with missing statewide races
+        2000: "20001107__tx__general__county.csv",  # Add judicial races
+        2002: "20021105__tx__general__county.csv",  # Add judicial races
+        2004: "20041102__tx__general__county.csv",  # Add judicial races
+        2006: "20061107__tx__general__county.csv",  # Add judicial races
+        2008: "20081104__tx__general__county.csv",  # Add judicial races
+        2010: "20101102__tx__general__county.csv",  # Add judicial races
+        2012: "20121106__tx__general__county.csv",  # Add judicial races
+        2014: "2014_General_Election_Returns-aligned.csv",  # Add judicial races
+        2016: "20161108__tx__general__county.csv",  # Add judicial races
+        2018: "20181106__tx__general__county.csv",  # Add judicial races
+        2020: "2020_General_Election_Returns-aligned.csv",  # Add judicial races and RR Comm
+        2022: "2022_General_Election_Returns-aligned.csv",  # Add judicial races and other statewide
+        2024: "2024_General_Election_Returns-Aligned.csv",  # Add judicial races
     }
     
     # Process each year
@@ -429,6 +559,7 @@ def process_texas_election_data():
                 - 'U.S. Sen' -> 'U.S. Senate'
                 - 'US Sen' / 'U.S. Senate' / 'U.S. Sen.' -> 'U.S. Senate'
                 - 'President' variants -> 'President'
+                - Judicial races with place numbers and variations
                 - keeps original if no mapping applies
                 """
                 if pd.isna(office_name):
@@ -462,6 +593,41 @@ def process_texas_election_data():
                     return 'Land Commissioner'
                 if 'railroad' in low or low.startswith('rr comm'):
                     return 'Railroad Commissioner'
+
+                # Texas Supreme Court
+                if 'supreme court' in low or 'sup ct' in low or 'sup crt' in low:
+                    # Chief Justice
+                    if 'chief' in low:
+                        return 'Chief Justice, Supreme Court'
+                    # Associate Justices with place numbers
+                    import re
+                    # Match place numbers in various formats: "Place 6", "Pl 6", "P6", etc.
+                    place_match = re.search(r'(?:place|pl\.?|p)\s*(\d+)', low)
+                    if place_match:
+                        place_num = place_match.group(1)
+                        # Check for unexpired term
+                        if 'unexp' in low:
+                            return f'Justice, Supreme Court, Place {place_num} (Unexpired)'
+                        return f'Justice, Supreme Court, Place {place_num}'
+                    # Generic justice without place number
+                    if 'justice' in low:
+                        return 'Justice, Supreme Court'
+
+                # Court of Criminal Appeals
+                if 'criminal appeals' in low or 'cca' in low:
+                    # Presiding Judge
+                    if 'presiding' in low or 'pres judge' in low:
+                        return 'Presiding Judge, Court of Criminal Appeals'
+                    # Judges with place numbers
+                    import re
+                    # Match place numbers: "Place 3", "Pl 3", "P3", "3", etc.
+                    place_match = re.search(r'(?:place|pl\.?|p)\s*(\d+)', low)
+                    if place_match:
+                        place_num = place_match.group(1)
+                        return f'Judge, Court of Criminal Appeals, Place {place_num}'
+                    # Generic judge without place number
+                    if 'judge' in low:
+                        return 'Judge, Court of Criminal Appeals'
 
                 # Default: return original trimmed string
                 return s
@@ -775,8 +941,43 @@ def process_texas_election_data():
                 elif 'Comptroller' in office_norm:
                     category = "statewide"
                     contest_key = "comptroller"
+                elif 'Chief Justice, Supreme Court' in office_norm:
+                    category = "judicial"
+                    contest_key = "supreme_court_chief"
+                elif 'Justice, Supreme Court, Place' in office_norm:
+                    # Extract place number from normalized name
+                    category = "judicial"
+                    import re
+                    place_match = re.search(r'Place (\d+)', office_norm)
+                    if place_match:
+                        place_num = place_match.group(1)
+                        unexpired = '(Unexpired)' in office_norm
+                        contest_key = f"supreme_court_place_{place_num}{'_unexpired' if unexpired else ''}"
+                    else:
+                        continue
+                elif 'Justice, Supreme Court' in office_norm:
+                    # Generic justice without place number
+                    category = "judicial"
+                    contest_key = "supreme_court_justice"
+                elif 'Presiding Judge, Court of Criminal Appeals' in office_norm:
+                    category = "judicial"
+                    contest_key = "cca_presiding_judge"
+                elif 'Judge, Court of Criminal Appeals, Place' in office_norm:
+                    # Extract place number from normalized name
+                    category = "judicial"
+                    import re
+                    place_match = re.search(r'Place (\d+)', office_norm)
+                    if place_match:
+                        place_num = place_match.group(1)
+                        contest_key = f"cca_place_{place_num}"
+                    else:
+                        continue
+                elif 'Judge, Court of Criminal Appeals' in office_norm:
+                    # Generic judge without place number
+                    category = "judicial"
+                    contest_key = "cca_judge"
                 else:
-                    # Skip other offices
+                    # Skip other offices (district judges, JPs, etc.)
                     continue
                 
                 # Check if this contest already exists - if so, skip it (keep original data)
