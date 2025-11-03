@@ -511,6 +511,20 @@ def process_texas_election_data():
     data_dir = Path("data")
     data_dir.mkdir(exist_ok=True)
     
+    # Convert NaN values to None for valid JSON
+    def clean_nan(obj):
+        """Recursively replace NaN with None in nested structures"""
+        if isinstance(obj, dict):
+            return {k: clean_nan(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [clean_nan(item) for item in obj]
+        elif isinstance(obj, float) and pd.isna(obj):
+            return None
+        else:
+            return obj
+    
+    results = clean_nan(results)
+    
     # Save to JSON file
     output_file = data_dir / "texas_election_results.json"
     with open(output_file, 'w', encoding='utf-8') as f:
