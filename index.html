@@ -950,8 +950,8 @@ document.addEventListener('DOMContentLoaded', function() {
         counties: './TX_Data/tl_2020_48_county20/tl_2020_48_county20.geojson',
         election: './data/texas_election_results.json'
       },
-      center: [-99.9, 31.0], // Texas center
-      zoom: 5.5,
+      center: [-99.5, 31.3], // Texas center (adjusted for better framing)
+      zoom: 5.8, // Improved zoom for full state visibility
     };
 
     mapboxgl.accessToken = CONFIG.mapboxToken;
