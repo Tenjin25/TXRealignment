@@ -25,7 +25,7 @@ An interactive visualization of Texas election results from 2000-2024, showcasin
   - 2020: President, U.S. Senate, Railroad Commissioner
   - Historical races back to 2000
 - **Normalized Data**: Consistent contest names and full candidate names across all years
-- **18 Multi-word County Names**: Properly formatted (La Salle, De Witt, El Paso, etc.)
+- **17 Multi-word County Names**: Properly formatted (La Salle, El Paso, Fort Bend, etc.)
 - **15-Level Competitiveness Scale**: From "Annihilation Democratic" to "Annihilation Republican"
 - **Interactive Mapbox GL Visualization**: County-level detail with hover tooltips
 
@@ -313,9 +313,9 @@ This race is uniquely handled in the visualization with individual breakdowns fo
 
 **2. County Name Normalization:**
 ```python
-# Handle 18 multi-word counties with space formatting
+# Handle 17 multi-word counties with space formatting
 'LASALLE' → 'LA SALLE'
-'DEWITT' → 'DE WITT'
+# Note: DeWitt is one word, no conversion needed
 # Ensures matching with GeoJSON county boundaries
 ```
 
@@ -351,8 +351,10 @@ margin_percentage = ((dem_votes - rep_votes) / (dem_votes + rep_votes)) * 100
 ## Data Quality & Normalization
 
 ### County Name Handling
-The project properly handles 18 multi-word Texas county names that require space formatting:
-- La Salle, De Witt, Deaf Smith, El Paso, Fort Bend, Jeff Davis, Jim Hogg, Jim Wells, Live Oak, Palo Pinto, Red River, San Augustine, San Jacinto, San Patricio, San Saba, Tom Green, Val Verde, Van Zandt
+The project properly handles 17 multi-word Texas county names that require space formatting:
+- La Salle, Deaf Smith, El Paso, Fort Bend, Jeff Davis, Jim Hogg, Jim Wells, Live Oak, Palo Pinto, Red River, San Augustine, San Jacinto, San Patricio, San Saba, Tom Green, Val Verde, Van Zandt
+
+Note: DeWitt County is officially one word and does not require space formatting.
 
 ### Contest Name Standardization
 All contest names are normalized for consistency:

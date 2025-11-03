@@ -14,7 +14,7 @@ def normalize_county_name(name):
     # Handle multi-word county names that appear as single words in CSV
     county_mappings = {
         'LASALLE': 'LA SALLE',
-        'DEWITT': 'DE WITT',
+        'DEWITT': 'DEWITT',  # Note: DeWitt is one word in official naming
         'DEAFSMITH': 'DEAF SMITH',
         'ELPASO': 'EL PASO',
         'FORTBEND': 'FORT BEND',
