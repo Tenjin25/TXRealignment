@@ -1286,14 +1286,18 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
               'LIEUTENANT GOVERNOR': 'Lieutenant Governor',
               'LT. GOVERNOR': 'Lieutenant Governor',
               'ATTORNEY GENERAL': 'Attorney General',
+              'ATTORNEY GEN': 'Attorney General',
               'COMPTROLLER OF PUBLIC ACCOUNTS': 'Comptroller',
               'COMPTROLLER': 'Comptroller',
               'COMMISSIONER OF THE GENERAL LAND OFFICE': 'Land Commissioner',
               'LAND COMMISSIONER': 'Land Commissioner',
+              'LAND COMM': 'Land Commissioner',
               'COMMISSIONER OF AGRICULTURE': 'Agriculture Commissioner',
               'AGRICULTURE COMMISSIONER': 'Agriculture Commissioner',
+              'AG COMM': 'Agriculture Commissioner',
               'RAILROAD COMMISSIONER': 'Railroad Commissioner',
-              'RAILROAD COMMISSION': 'Railroad Commissioner'
+              'RAILROAD COMMISSION': 'Railroad Commissioner',
+              'RR COMM 1': 'Railroad Commissioner'
             };
             const up = (contestName || '').toString().trim().toUpperCase();
             if (shortMap[up]) officeLabel = shortMap[up];
