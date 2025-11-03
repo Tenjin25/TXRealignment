@@ -1341,7 +1341,24 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
               // Nickname: "US President (2008)", "Auditor (2016)", etc.
               let displayName = `${officeLabel} (${item.year})`;
               if (item.contestName && !officeLabel.includes(item.contestName)) {
-                displayName = `${item.contestName} (${item.year})`;
+                // Apply normalization to contestName for display
+                let normalizedName = item.contestName;
+                const up = (item.contestName || '').toString().trim().toUpperCase();
+                const shortMap = {
+                  'PRESIDENT AND VICE PRESIDENT OF THE UNITED STATES': 'US President',
+                  'PRESIDENT/VICEPRESIDENT': 'US President',
+                  'US PRESIDENT': 'US President',
+                  'PRESIDENT': 'US President',
+                  'U.S. SENATE': 'US Senate',
+                  'U.S. SEN': 'US Senate',
+                  'U.S SEN': 'US Senate',
+                  'U.S Sen': 'US Senate',
+                  'US SEN': 'US Senate',
+                  'US SENATE': 'US Senate',
+                  'UNITED STATES SENATOR': 'US Senate'
+                };
+                if (shortMap[up]) normalizedName = shortMap[up];
+                displayName = `${normalizedName} (${item.year})`;
               }
               o.textContent = displayName;
               og.appendChild(o);
