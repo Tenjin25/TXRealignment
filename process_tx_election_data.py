@@ -250,7 +250,7 @@ def process_texas_election_data():
         2018: "20181106__tx__general__county.csv",
         2020: "20201103__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
         2022: "20221108__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
-        2024: "2024/counties",   # Precinct-level data in directory
+        2024: "2024_General_Election_Returns.csv",  # Complete statewide data
     }
     
     # Process each year
@@ -278,6 +278,8 @@ def process_texas_election_data():
                 else:
                     # Read county-level CSV directly
                     df = pd.read_csv(filepath)
+                    # Normalize column names to lowercase for consistency
+                    df.columns = df.columns.str.lower()
             else:
                 print(f"Warning: {filepath} not found, skipping year {year}")
                 continue
@@ -289,38 +291,80 @@ def process_texas_election_data():
             
             # Process by office type
             offices = df['office'].unique()
-            
+
+            def normalize_office_name(office_name):
+                """Normalize common office name variants to canonical names.
+
+                Examples handled:
+                - 'U.S. Sen' -> 'U.S. Senate'
+                - 'US Sen' / 'U.S. Senate' / 'U.S. Sen.' -> 'U.S. Senate'
+                - 'President' variants -> 'President'
+                - keeps original if no mapping applies
+                """
+                if pd.isna(office_name):
+                    return ''
+                s = str(office_name).strip()
+                low = s.lower()
+
+                # Presidential
+                if 'president' in low:
+                    return 'President'
+
+                # U.S. Senate variations
+                # match 'u.s. sen', 'u.s. senate', 'us sen', 'us senate', 'u.s. sen.' etc.
+                if ('u.s.' in low or 'us ' in low or low.startswith('u.s') or low.startswith('us')) and 'sen' in low:
+                    return 'U.S. Senate'
+
+                # Governor / statewide common names
+                if 'governor' in low:
+                    return 'Governor'
+                if 'lieutenant' in low and 'governor' in low:
+                    return 'Lieutenant Governor'
+                if 'attorney general' in low:
+                    return 'Attorney General'
+                if 'comptroller' in low:
+                    return 'Comptroller'
+                if 'agriculture' in low:
+                    return 'Agriculture Commissioner'
+                if 'railroad' in low:
+                    return 'Railroad Commissioner'
+
+                # Default: return original trimmed string
+                return s
+
             for office in offices:
                 # Skip NaN or non-string office values
                 if pd.isna(office) or not isinstance(office, str):
                     continue
-                    
+                # Normalize office for consistent classification
+                office_norm = normalize_office_name(office)
                 office_data = df[df['office'] == office].copy()
                 
                 # Determine contest category
-                if 'President' in office or 'VicePresident' in office:
+                # Use the normalized office name for classification
+                if 'President' in office_norm or 'VicePresident' in office_norm:
                     category = "presidential"
                     contest_key = "president"
-                elif 'U.S. Senate' in office:
+                elif 'U.S. Senate' in office_norm:
                     # Match only U.S. Senate, not State Senate
                     category = "us_senate"
                     contest_key = "us_senate"
-                elif 'Lieutenant Governor' in office:
+                elif 'Lieutenant Governor' in office_norm:
                     category = "statewide"
                     contest_key = "lt_governor"
-                elif 'Governor' in office:
+                elif 'Governor' in office_norm:
                     category = "statewide"
                     contest_key = "governor"
-                elif 'Attorney General' in office:
+                elif 'Attorney General' in office_norm:
                     category = "statewide"
                     contest_key = "attorney_general"
-                elif 'Comptroller' in office:
+                elif 'Comptroller' in office_norm:
                     category = "statewide"
                     contest_key = "comptroller"
-                elif 'Agriculture Commissioner' in office or 'Commissioner of Agriculture' in office:
+                elif 'Agriculture Commissioner' in office_norm or 'Commissioner of Agriculture' in office_norm:
                     category = "statewide"
                     contest_key = "agriculture_commissioner"
-                elif 'Railroad Commissioner' in office or 'Railroad Commission' in office:
+                elif 'Railroad Commissioner' in office_norm or 'Railroad Commission' in office_norm:
                     category = "statewide"
                     contest_key = "railroad_commissioner"
                 else:
