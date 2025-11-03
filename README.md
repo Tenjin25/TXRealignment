@@ -184,7 +184,7 @@ Starr County in South Texas represents the most dramatic political transformatio
 **The Transformation:**
 - **2000**: D+54.59% - "Annihilation Democratic" (40%+ margin) - One of the bluest counties in Texas
 - **2012**: D+73.80% - "Annihilation Democratic" (40%+ margin) - Peak Democratic performance (Obama 86.9%)
-- **2020**: D+5.11% - "Likely Democratic" (5.5-10% margin) - Collapsed to barely Democratic
+- **2020**: D+5.11% - "Lean Democratic" (1-5.5% margin) - Collapsed to barely Democratic
 - **2024**: R+16.06% - "Safe Republican" (10-20% margin) - Complete flip to solid Republican
 
 **What Happened?**
