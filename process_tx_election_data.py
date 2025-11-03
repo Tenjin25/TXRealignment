@@ -54,6 +54,11 @@ def get_full_candidate_name(last_name, year, office, party):
                 return 'Colin Allred'
             elif last_name.lower() in ['cruz', 'ted']:
                 return 'Ted Cruz'
+        elif 'railroad' in office.lower():
+            if last_name.lower() == 'craddick':
+                return 'Christi Craddick'
+            elif last_name.lower() == 'culbert':
+                return 'Katherine Culbert'
     
     # 2022 statewide candidates
     elif year == 2022:
@@ -512,7 +517,7 @@ def process_texas_election_data():
                 # Initialize contest
                 if contest_key not in results["results_by_year"][year][category]:
                     results["results_by_year"][year][category][contest_key] = {
-                        "contest_name": original_office,  # Use cleaned office name
+                        "contest_name": office_norm,  # Use normalized office name for consistency
                         "year": year,
                         "results": {},
                         "dem_candidate": None,
@@ -532,7 +537,7 @@ def process_texas_election_data():
                     if norm_county not in contest["results"]:
                         contest["results"][norm_county] = {
                             "county": norm_county,
-                            "contest": original_office,  # Use cleaned office name
+                            "contest": office_norm,  # Use normalized office name for consistency
                             "year": str(year),
                             "dem_votes": 0,
                             "rep_votes": 0,
@@ -567,14 +572,14 @@ def process_texas_election_data():
                         if party == 'DEM':
                             contest["results"][norm_county]["dem_votes"] += votes
                             if not contest["results"][norm_county]["dem_candidate"] and candidate:
-                                full_name = get_full_candidate_name(candidate, year, original_office, 'DEM')
+                                full_name = get_full_candidate_name(candidate, year, office_norm, 'DEM')
                                 contest["results"][norm_county]["dem_candidate"] = full_name
                                 if not contest["dem_candidate"]:
                                     contest["dem_candidate"] = full_name
                         elif party == 'REP':
                             contest["results"][norm_county]["rep_votes"] += votes
                             if not contest["results"][norm_county]["rep_candidate"] and candidate:
-                                full_name = get_full_candidate_name(candidate, year, original_office, 'REP')
+                                full_name = get_full_candidate_name(candidate, year, office_norm, 'REP')
                                 contest["results"][norm_county]["rep_candidate"] = full_name
                                 if not contest["rep_candidate"]:
                                     contest["rep_candidate"] = full_name
@@ -788,7 +793,7 @@ def process_texas_election_data():
                 
                 # Initialize contest
                 results["results_by_year"][year][category][contest_key] = {
-                    "contest_name": original_office,
+                    "contest_name": office_norm,  # Use normalized office name for consistency
                     "year": year,
                     "results": {},
                     "dem_candidate": None,
@@ -807,7 +812,7 @@ def process_texas_election_data():
                     if norm_county not in contest["results"]:
                         contest["results"][norm_county] = {
                             "county": norm_county,
-                            "contest": original_office,
+                            "contest": office_norm,  # Use normalized office name
                             "year": str(year),
                             "dem_votes": 0,
                             "rep_votes": 0,
@@ -838,14 +843,14 @@ def process_texas_election_data():
                         if party == 'DEM':
                             contest["results"][norm_county]["dem_votes"] += votes
                             if not contest["results"][norm_county]["dem_candidate"] and candidate:
-                                full_name = get_full_candidate_name(candidate, year, original_office, 'DEM')
+                                full_name = get_full_candidate_name(candidate, year, office_norm, 'DEM')
                                 contest["results"][norm_county]["dem_candidate"] = full_name
                                 if not contest["dem_candidate"]:
                                     contest["dem_candidate"] = full_name
                         elif party == 'REP':
                             contest["results"][norm_county]["rep_votes"] += votes
                             if not contest["results"][norm_county]["rep_candidate"] and candidate:
-                                full_name = get_full_candidate_name(candidate, year, original_office, 'REP')
+                                full_name = get_full_candidate_name(candidate, year, office_norm, 'REP')
                                 contest["results"][norm_county]["rep_candidate"] = full_name
                                 if not contest["rep_candidate"]:
                                     contest["rep_candidate"] = full_name
