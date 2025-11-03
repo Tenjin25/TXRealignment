@@ -10,6 +10,29 @@ def normalize_county_name(name):
         return ""
     return str(name).upper().strip()
 
+def get_full_candidate_name(last_name, year, office, party):
+    """Get full candidate name from last name for major races"""
+    if pd.isna(last_name) or not last_name:
+        return None
+    
+    last_name = str(last_name).strip()
+    
+    # 2024 candidates
+    if year == 2024:
+        if 'president' in office.lower():
+            if last_name.lower() in ['harris', 'kamala']:
+                return 'Kamala Harris'
+            elif last_name.lower() in ['trump', 'donald']:
+                return 'Donald Trump'
+        elif 'sen' in office.lower():  # Matches "U.S. Sen", "Senate", etc.
+            if last_name.lower() in ['allred', 'colin']:
+                return 'Colin Allred'
+            elif last_name.lower() in ['cruz', 'ted']:
+                return 'Ted Cruz'
+    
+    # For other years/candidates, return the last name as-is
+    return last_name
+
 def aggregate_single_precinct_file(filepath, year):
     """
     Aggregate a single precinct-level CSV file to county-level data
@@ -454,15 +477,17 @@ def process_texas_election_data():
                         if party == 'DEM':
                             contest["results"][norm_county]["dem_votes"] += votes
                             if not contest["results"][norm_county]["dem_candidate"] and candidate:
-                                contest["results"][norm_county]["dem_candidate"] = candidate
+                                full_name = get_full_candidate_name(candidate, year, office, 'DEM')
+                                contest["results"][norm_county]["dem_candidate"] = full_name
                                 if not contest["dem_candidate"]:
-                                    contest["dem_candidate"] = candidate
+                                    contest["dem_candidate"] = full_name
                         elif party == 'REP':
                             contest["results"][norm_county]["rep_votes"] += votes
                             if not contest["results"][norm_county]["rep_candidate"] and candidate:
-                                contest["results"][norm_county]["rep_candidate"] = candidate
+                                full_name = get_full_candidate_name(candidate, year, office, 'REP')
+                                contest["results"][norm_county]["rep_candidate"] = full_name
                                 if not contest["rep_candidate"]:
-                                    contest["rep_candidate"] = candidate
+                                    contest["rep_candidate"] = full_name
                         else:
                             contest["results"][norm_county]["other_votes"] += votes
                         
