@@ -5,7 +5,8 @@ An interactive visualization of Texas election results from 2000-2024, showcasin
 ## Features
 
 - **13 Years of Data**: 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024
-- **33 Contests**: Presidential, Senate, and statewide offices
+- **31 Contests**: Presidential, Senate, and statewide offices
+- **Complete 2020 & 2022 Data**: Includes President, Senate, Governor, Attorney General, Lieutenant Governor, and Comptroller races
 - **15-Level Competitiveness Scale**: From "Solid Democratic" to "Solid Republican"
 - **Interactive Mapbox GL Visualization**: County-level detail with hover tooltips
 
@@ -30,14 +31,16 @@ This race is uniquely handled in the visualization with individual breakdowns fo
 ## Data Sources
 
 - County boundaries: U.S. Census Bureau TIGER/Line Shapefiles (2020)
-- Election results: OpenElections Project (https://github.com/openelections)
+- Election results 2000-2018, 2024: OpenElections Project (https://github.com/openelections)
+- Election results 2020, 2022: Precinct-level data from `election_data_TX.v06-aligned.csv`, aggregated to county level
 
 ## Files
 
 - `index.html` - Main map interface
-- `data/texas_election_results.json` - Processed election results
-- `TX_Data/tl_2020_48_county20.geojson` - County boundary data
-- `process_tx_election_data.py` - Data processing script
+- `data/texas_election_results.json` - Processed election results (31 contests across 13 years)
+- `TX_Data/tl_2020_48_county20.geojson` - County boundary data (254 Texas counties)
+- `process_tx_election_data.py` - Main data processing script
+- `process_precinct_data.py` - Precinct-level data aggregation for 2020 and 2022
 
 ## Usage
 
