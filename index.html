@@ -1344,6 +1344,13 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
               'GREENSBORO AUDITORIUM BONDS'
             ];
             if (contestName && unwantedContests.some(unwanted => contestName.toString().toUpperCase().includes(unwanted))) return;
+            
+            // Filter out unopposed races (where only one major party candidate is running)
+            const demCandidate = contest && contest.dem_candidate;
+            const repCandidate = contest && contest.rep_candidate;
+            const isUnopposed = (!demCandidate && repCandidate) || (demCandidate && !repCandidate);
+            if (isUnopposed) return; // Skip unopposed races
+            
             if (!groupedByOffice[officeLabel]) groupedByOffice[officeLabel] = [];
             groupedByOffice[officeLabel].push({ year, cat, contestKey, contestName });
             // For Statewide Offices and Judicial, show all contests
