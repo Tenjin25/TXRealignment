@@ -1,0 +1,9 @@
+[
+  {
+    "region": "Southeast Texas",
+    "counties": [
+      "JEFFERSON", "ORANGE", "HARDIN", "CHAMBERS", "LIBERTY", "NEWTON", "TYLER", "JASPER", "POLK", "SAN JACINTO", "WALKER", "TRINITY", "MONTGOMERY", "HOUSTON", "SABINE", "ANGELINA", "NACOGDOCHES", "SHELBY", "SAN AUGUSTINE", "HARRIS"
+    ]
+  }
+  // Add more regions as needed, e.g. DFW Metroplex
+]

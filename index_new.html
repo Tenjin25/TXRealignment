@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Political Realignment Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .map-button {
+            display: inline-block;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .map-button.primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .map-button.primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+        
+        .map-button.secondary {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .map-button.secondary:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+        }
+        
+        .features {
+            margin-top: 48px;
+            text-align: left;
+        }
+        
+        .features h2 {
+            font-size: 1.75rem;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+        
+        .features ul {
+            list-style: none;
+        }
+        
+        .features li {
+            font-size: 1rem;
+            color: #4b5563;
+            margin-bottom: 12px;
+            padding-left: 28px;
+            position: relative;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Texas Political Realignment</h1>
+        <p class="subtitle">Interactive Analysis of Political Trends (2000-2024)</p>
+        
+        <div class="description">
+            <p>Explore the political evolution of Texas through interactive maps showing county-level voting patterns across multiple election cycles. Analyze how the state's political landscape has shifted over the past two decades.</p>
+        </div>
+        
+        <div class="button-container">
+            <a href="TXMap.html" class="map-button primary">
+                📊 Explore Texas Map
+            </a>
+            <a href="NCMap.html" class="map-button secondary">
+                🔍 View North Carolina Comparison
+            </a>
+        </div>
+        
+        <div class="features">
+            <h2>Features</h2>
+            <ul>
+                <li>Interactive county-level election results from 2000 to 2024</li>
+                <li>Presidential, Senate, and Gubernatorial race analysis</li>
+                <li>Visualize political margins and competitiveness</li>
+                <li>Historical trends and realignment patterns</li>
+                <li>Detailed demographic and voting data</li>
+                <li>Compare Texas to other swing states</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Data Sources:</strong> OpenElections, U.S. Census Bureau</p>
+            <p><strong>Created by:</strong> Shamar Davis</p>
+            <p><strong>Last Updated:</strong> November 2025</p>
+        </div>
+    </div>
+</body>
+</html>

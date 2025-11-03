@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <title>TX Political Realignment Map (2000-2024)</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'>
+  <meta property="og:title" content="TX Political Realignment Map (2000-2024)">
+  <meta property="og:description" content="Interactive visualization of Texas's political trends from 2000 to 2024, showing county-level voting patterns.">
+  <meta property="og:image" content="preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet'>
+  
+  <style>
+html, body {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh;
+  background: #f0f4f8;
+  z-index: 1;
+}
+
+.sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
+  z-index: 2;
+  background: #fff;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+  border-left: 1px solid #e5e7eb;
+  overflow-y: auto;
+  transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+.sidebar.minimized {
+  width: 50px !important;
+  min-width: 50px !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+.sidebar.minimized .sidebar-content {
+  display: none !important;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.sidebar-content {
+  padding: 20px;
+}
+
+.minimize-btn {
+  background: #2563eb;
+  border: 1px solid #1d4ed8;
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.minimize-btn:hover {
+  background: #1d4ed8;
+  transform: scale(1.05);
+}
+
+.sidebar.minimized .minimize-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10003;
+}
+
+/* Main Controls */
+.main-controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 1000;
+  min-width: 380px;
+  max-width: 420px;
+}
+
+.main-controls.minimized {
+  min-width: 60px;
+  max-width: 60px;
+  padding: 15px;
+}
+
+.main-controls.minimized .controls-content {
+  display: none;
+}
+
+.controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.controls-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.control-group {
+  margin-bottom: 16px;
+}
+
+.control-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.control-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+}
+
+/* Legend */
+.legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 250px;
+  border: 1px solid #e5e7eb;
+}
+
+.legend.minimized .legend-content {
+  display: none;
+}
+
+.legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 12px 12px 0 0;
+}
+
+.legend-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.legend-content {
+  padding: 16px 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* County Details */
+.county-details {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e7f1ff;
+}
+
+.county-details h4 {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.statewide-results {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border: 1px solid #0ea5e9;
+}
+
+.statewide-results h4 {
+  margin: 0 0 15px 0;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+}
+
+.sidebar-footer {
+  padding: 16px 0;
+  text-align: center;
+  color: #888;
+  font-size: 15px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Sidebar for County Details and Analysis -->
+<div class="sidebar minimized" id="sidebar">
+  <div class="sidebar-header" id="sidebar-header">
+    <h3>📊 County Analysis</h3>
+    <button class="minimize-btn" onclick="toggleSidebar()" id="sidebar-minimize-btn">+</button>
+  </div>
+  <div class="sidebar-content">
+    <div class="county-details" id="county-details" style="display: none;">
+      <h4 id="county-name">Select a County</h4>
+      <div id="county-info-content">
+        Click on any county to see detailed election results and analysis.
+      </div>
+    </div>
+    <div style="margin-bottom: 16px;">
+      <label for="county-search" style="font-weight:600;">Search County:</label>
+      <input type="text" id="county-search" placeholder="Type county name..." autocomplete="off" spellcheck="false" style="width:100%;padding:8px;border-radius:6px;margin-top:6px;margin-bottom:6px;border:1px solid #d1d5db;" />
+    </div>
+    <h4 id="statewide">🏛️ Texas Statewide</h4>
+    <div style="margin:18px 0 8px 0; border-bottom:2px solid #e5e7eb;"></div>
+    <div class="statewide-results" id="statewide-results">
+      <h4 id="contest-name" style="margin:0 0 15px 0; font-size:16px; font-weight:700; color:#1f2937;"></h4>
+      <div id="statewide-content">
+        <p>Select a contest to see statewide results and margin.</p>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    Created by Shamar Davis
+  </div>
+</div>
+
+<!-- Main Controls Dropdown (Contest Selector) -->
+<div class="main-controls" id="main-controls">
+  <div class="controls-header">
+    <h3>🗳️ TX Election Contests</h3>
+    <button class="minimize-btn" onclick="toggleMainControls()" id="controls-minimize-btn">−</button>
+  </div>
+  <div class="controls-content" id="controls-content">
+    <div class="control-group">
+      <label>📊 Contest Type:</label>
+      <select id="contestSelect">
+        <option value="">Select a Contest...</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend" id="legend">
+  <div class="legend-header">
+    <h4>Political Categories</h4>
+    <button class="minimize-btn" onclick="toggleLegend()" id="legend-minimize-btn">−</button>
+  </div>
+  <div class="legend-content" id="legend-content">
+    <div class="legend-item"><div class="legend-color" style="background: #67000d;"></div>Annihilation Republican (40%+)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #a50f15;"></div>Dominant Republican (30-40%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #cb181d;"></div>Stronghold Republican (20-30%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #ef3b2c;"></div>Safe Republican (10-20%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #fb6a4a;"></div>Likely Republican (5.5-10%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #fcae91;"></div>Lean Republican (1-5.5%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #fee8c8;"></div>Tilt Republican (0.5-1%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #f7f7f7; border: 1px solid #999;"></div>Tossup (±0.5%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #e1f5fe;"></div>Tilt Democratic (0.5-1%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #c6dbef;"></div>Lean Democratic (1-5.5%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #9ecae1;"></div>Likely Democratic (5.5-10%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #6baed6;"></div>Safe Democratic (10-20%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #3182bd;"></div>Stronghold Democratic (20-30%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #08519c;"></div>Dominant Democratic (30-40%)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #08306b;"></div>Annihilation Democratic (40%+)</div>
+  </div>
+</div>
+
+<script>
+// --- CONFIG ---
+const CONFIG = {
+  mapboxToken: 'pk.eyJ1Ijoic2hhbWFyZGF2aXMiLCJhIjoiY21kcW8yeDB2MDhvbTJzb29qeGp1aDZmZCJ9.Zw_i6U-dL7_bEKRHTUh7yg',
+  paths: {
+    counties: './TX_Data/tl_2020_48_county20/tl_2020_48_county20.geojson',
+    election: './data/texas_election_results.json'
+  },
+  center: [-99.9, 31.0], // Texas center
+  zoom: 5.5,
+};
+
+mapboxgl.accessToken = CONFIG.mapboxToken;
+
+const map = new mapboxgl.Map({ 
+  container: 'map', 
+  style: 'mapbox://styles/mapbox/light-v11', 
+  center: CONFIG.center, 
+  zoom: CONFIG.zoom 
+});
+
+let electionData = null;
+let currentContest = null;
+let lastSelectedCounty = null;
+
+function toggleLegend() {
+  const legend = document.getElementById('legend');
+  const legendContent = document.getElementById('legend-content');
+  const minimizeBtn = document.getElementById('legend-minimize-btn');
+  
+  if (legend.classList.contains('minimized')) {
+    legend.classList.remove('minimized');
+    legendContent.style.display = 'block';
+    minimizeBtn.textContent = '−';
+  } else {
+    legend.classList.add('minimized');
+    legendContent.style.display = 'none';
+    minimizeBtn.textContent = '+';
+  }
+}
+
+function toggleMainControls() {
+  const controls = document.getElementById('main-controls');
+  const controlsContent = document.getElementById('controls-content');
+  const minimizeBtn = document.getElementById('controls-minimize-btn');
+  
+  if (controls.classList.contains('minimized')) {
+    controls.classList.remove('minimized');
+    controlsContent.style.display = 'block';
+    minimizeBtn.textContent = '−';
+  } else {
+    controls.classList.add('minimized');
+    controlsContent.style.display = 'none';
+    minimizeBtn.textContent = '+';
+  }
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarContent = document.querySelector('.sidebar-content');
+  const minimizeBtn = document.getElementById('sidebar-minimize-btn');
+  
+  if (sidebar.classList.contains('minimized')) {
+    sidebar.classList.remove('minimized');
+    sidebarContent.style.display = 'block';
+    minimizeBtn.textContent = '−';
+  } else {
+    sidebar.classList.add('minimized');
+    sidebarContent.style.display = 'none';
+    minimizeBtn.textContent = '+';
+  }
+}
+
+// Initialize the map
+map.on('load', async () => {
+  try {
+    // Load county boundaries
+    const countiesResponse = await fetch(CONFIG.paths.counties);
+    const countiesData = await countiesResponse.json();
+    
+    map.addSource('counties', {
+      type: 'geojson',
+      data: countiesData
+    });
+    
+    // Add county layers
+    map.addLayer({ 
+      id: 'county-fill', 
+      type: 'fill', 
+      source: 'counties', 
+      paint: { 
+        'fill-color': '#e0e0e0', 
+        'fill-opacity': 0.6 
+      } 
+    });
+    
+    map.addLayer({ 
+      id: 'county-stroke', 
+      type: 'line', 
+      source: 'counties', 
+      paint: { 
+        'line-color': '#333', 
+        'line-width': 1 
+      } 
+    });
+    
+    // Add county click handler
+    map.on('click', 'county-fill', (e) => {
+      if (e.features && e.features[0] && e.features[0].properties) {
+        const props = e.features[0].properties;
+        const countyName = props.NAME || props.NAME20 || props.NAMELSAD20 || props.county_name;
+        if (countyName) {
+          showCountyDetails(countyName);
+          lastSelectedCounty = countyName;
+          
+          // Expand sidebar if minimized
+          const sidebar = document.getElementById('sidebar');
+          if (sidebar && sidebar.classList.contains('minimized')) {
+            toggleSidebar();
+          }
+        }
+      }
+    });
+    
+    // Add hover effects
+    map.on('mouseenter', 'county-fill', () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    
+    map.on('mouseleave', 'county-fill', () => {
+      map.getCanvas().style.cursor = '';
+    });
+    
+    console.log('Map initialized successfully');
+    
+  } catch (error) {
+    console.error('Error initializing map:', error);
+  }
+});
+
+function showCountyDetails(countyName) {
+  const sidebar = document.getElementById('sidebar');
+  const detailsDiv = document.getElementById('county-details');
+  const contentEl = document.getElementById('county-info-content');
+  
+  if (!contentEl || !detailsDiv) return;
+  
+  if (sidebar) {
+    sidebar.classList.remove('minimized');
+    const btn = document.getElementById('sidebar-minimize-btn');
+    if (btn) btn.textContent = '−';
+  }
+  
+  const countyNameElement = document.getElementById('county-name');
+  if (countyNameElement) countyNameElement.textContent = countyName + ' County';
+  
+  contentEl.innerHTML = `<p>Election data will be displayed here once the data JSON is created.</p>
+    <p><strong>County:</strong> ${countyName}</p>`;
+  detailsDiv.style.display = 'block';
+}
+</script>
+
+</body>
+</html>
