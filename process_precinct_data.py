@@ -25,17 +25,41 @@ fips_to_name = dict(zip(fips_df['fips'], fips_df['county']))
 # Map FIPS to county names
 df['county_name'] = df['county_fips'].map(fips_to_name)
 
-# Define contests to process
+# Define contests to process with candidate names
 contests_2020 = {
-    'President': ('E_20_PRES_Total', 'E_20_PRES_Dem', 'E_20_PRES_Rep'),
-    'U.S. Senate': ('E_20_SEN_Total', 'E_20_SEN_Dem', 'E_20_SEN_Rep')
+    'President': {
+        'columns': ('E_20_PRES_Total', 'E_20_PRES_Dem', 'E_20_PRES_Rep'),
+        'dem_candidate': 'Joseph R. Biden / Kamala D. Harris',
+        'rep_candidate': 'Donald J. Trump / Michael R. Pence'
+    },
+    'U.S. Senate': {
+        'columns': ('E_20_SEN_Total', 'E_20_SEN_Dem', 'E_20_SEN_Rep'),
+        'dem_candidate': 'Mary "MJ" Hegar',
+        'rep_candidate': 'John Cornyn'
+    }
 }
 
 contests_2022 = {
-    'Governor': ('E_22_GOV_Total', 'E_22_GOV_Dem', 'E_22_GOV_Rep'),
-    'Attorney General': ('E_22_AG_Total', 'E_22_AG_Dem', 'E_22_AG_Rep'),
-    'Lieutenant Governor': ('E_22_LTG_Total', 'E_22_LTG_Dem', 'E_22_LTG_Rep'),
-    'Comptroller': ('E_22_TREAS_Total', 'E_22_TREAS_Dem', 'E_22_TREAS_Rep')
+    'Governor': {
+        'columns': ('E_22_GOV_Total', 'E_22_GOV_Dem', 'E_22_GOV_Rep'),
+        'dem_candidate': "Beto O'Rourke",
+        'rep_candidate': 'Greg Abbott'
+    },
+    'Attorney General': {
+        'columns': ('E_22_AG_Total', 'E_22_AG_Dem', 'E_22_AG_Rep'),
+        'dem_candidate': 'Rochelle Mercedes Garza',
+        'rep_candidate': 'Ken Paxton'
+    },
+    'Lieutenant Governor': {
+        'columns': ('E_22_LTG_Total', 'E_22_LTG_Dem', 'E_22_LTG_Rep'),
+        'dem_candidate': 'Mike Collier',
+        'rep_candidate': 'Dan Patrick'
+    },
+    'Comptroller': {
+        'columns': ('E_22_TREAS_Total', 'E_22_TREAS_Dem', 'E_22_TREAS_Rep'),
+        'dem_candidate': 'Janet T. Dudding',
+        'rep_candidate': 'Glenn Hegar'
+    }
 }
 
 # Aggregate to county level
@@ -46,7 +70,11 @@ results = {}
 def process_year(year, contests):
     year_results = []
     
-    for contest_name, (total_col, dem_col, rep_col) in contests.items():
+    for contest_name, contest_info in contests.items():
+        total_col, dem_col, rep_col = contest_info['columns']
+        dem_candidate = contest_info['dem_candidate']
+        rep_candidate = contest_info['rep_candidate']
+        
         # Group by county and sum
         county_data = df.groupby('county_name').agg({
             total_col: 'sum',
@@ -63,8 +91,8 @@ def process_year(year, contests):
         # Add year and contest info
         county_data['year'] = year
         county_data['office'] = contest_name
-        county_data['party_dem'] = 'DEM'
-        county_data['party_rep'] = 'REP'
+        county_data['dem_candidate'] = dem_candidate
+        county_data['rep_candidate'] = rep_candidate
         
         year_results.append(county_data)
     
@@ -93,7 +121,7 @@ for _, row in all_results.iterrows():
         'county': county_name,
         'office': row['office'],
         'party': 'DEM',
-        'candidate': '',
+        'candidate': row['dem_candidate'],
         'votes': int(row['dem_votes'])
     })
     
@@ -102,7 +130,7 @@ for _, row in all_results.iterrows():
         'county': county_name,
         'office': row['office'],
         'party': 'REP',
-        'candidate': '',
+        'candidate': row['rep_candidate'],
         'votes': int(row['rep_votes'])
     })
     
