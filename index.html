@@ -1213,7 +1213,7 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
             }
 
             // Skip incomplete contests (2022 has only 101 counties, 2024 has parsing errors)
-            // Allow 2022 and 2024 contests to appear in dropdown
+            if (String(year) === '2024') return; // Only exclude 2024, show 2022
             // Only include allowed offices (also accept Statewide Offices and Judicial categories if they map)
             if (!allowedOffices.includes(officeLabel)) {
               // If it was grouped as generic Statewide Offices or Judicial, try to include as-is
