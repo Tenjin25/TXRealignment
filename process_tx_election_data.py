@@ -349,6 +349,10 @@ def process_texas_election_data():
                 }
                 df['party'] = df['party'].map(lambda x: party_map.get(str(x).strip(), str(x).strip()) if pd.notna(x) else x)
             
+            # Normalize candidate column name (some files use 'name', others 'candidate')
+            if 'name' in df.columns and 'candidate' not in df.columns:
+                df['candidate'] = df['name']
+            
             # Process by office type
             offices = df['office'].unique()
 
@@ -495,14 +499,14 @@ def process_texas_election_data():
                         if party == 'DEM':
                             contest["results"][norm_county]["dem_votes"] += votes
                             if not contest["results"][norm_county]["dem_candidate"] and candidate:
-                                full_name = get_full_candidate_name(candidate, year, office, 'DEM')
+                                full_name = get_full_candidate_name(candidate, year, original_office, 'DEM')
                                 contest["results"][norm_county]["dem_candidate"] = full_name
                                 if not contest["dem_candidate"]:
                                     contest["dem_candidate"] = full_name
                         elif party == 'REP':
                             contest["results"][norm_county]["rep_votes"] += votes
                             if not contest["results"][norm_county]["rep_candidate"] and candidate:
-                                full_name = get_full_candidate_name(candidate, year, office, 'REP')
+                                full_name = get_full_candidate_name(candidate, year, original_office, 'REP')
                                 contest["results"][norm_county]["rep_candidate"] = full_name
                                 if not contest["rep_candidate"]:
                                     contest["rep_candidate"] = full_name
