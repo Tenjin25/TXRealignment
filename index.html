@@ -1173,6 +1173,26 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
       return nameMap[contestType] || contestType.toUpperCase();
     }
 
+    // Helper function to normalize contest names for display
+    function normalizeContestName(contestName) {
+      if (!contestName) return contestName;
+      const up = contestName.toString().trim().toUpperCase();
+      const shortMap = {
+        'PRESIDENT AND VICE PRESIDENT OF THE UNITED STATES': 'US President',
+        'PRESIDENT/VICEPRESIDENT': 'US President',
+        'US PRESIDENT': 'US President',
+        'PRESIDENT': 'US President',
+        'U.S. SENATE': 'US Senate',
+        'U.S. SEN': 'US Senate',
+        'U.S SEN': 'US Senate',
+        'U.S Sen': 'US Senate',
+        'US SEN': 'US Senate',
+        'US SENATE': 'US Senate',
+        'UNITED STATES SENATOR': 'US Senate'
+      };
+      return shortMap[up] || contestName;
+    }
+
     function populateContestSelectFromElectionJSON(electionData) {
       try {
         console.log('[DIAGNOSTIC] populateContestSelectFromElectionJSON called', !!electionData);
@@ -1331,7 +1351,7 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
         // This function builds grouped/nicknamed contest options for clarity
         function buildGranularContestDropdown() {
           const sel = document.getElementById('contestSelect');
-          sel.innerHTML = '<option value="">Select a contest...</option>';
+          sel.innerHTML = '<option value="">Select a Contest...</option>';
           Object.entries(groupedByOffice).forEach(([officeLabel, contests]) => {
             const og = document.createElement('optgroup');
             og.label = officeLabel;
@@ -1342,22 +1362,7 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
               let displayName = `${officeLabel} (${item.year})`;
               if (item.contestName && !officeLabel.includes(item.contestName)) {
                 // Apply normalization to contestName for display
-                let normalizedName = item.contestName;
-                const up = (item.contestName || '').toString().trim().toUpperCase();
-                const shortMap = {
-                  'PRESIDENT AND VICE PRESIDENT OF THE UNITED STATES': 'US President',
-                  'PRESIDENT/VICEPRESIDENT': 'US President',
-                  'US PRESIDENT': 'US President',
-                  'PRESIDENT': 'US President',
-                  'U.S. SENATE': 'US Senate',
-                  'U.S. SEN': 'US Senate',
-                  'U.S SEN': 'US Senate',
-                  'U.S Sen': 'US Senate',
-                  'US SEN': 'US Senate',
-                  'US SENATE': 'US Senate',
-                  'UNITED STATES SENATOR': 'US Senate'
-                };
-                if (shortMap[up]) normalizedName = shortMap[up];
+                const normalizedName = normalizeContestName(item.contestName);
                 displayName = `${normalizedName} (${item.year})`;
               }
               o.textContent = displayName;
@@ -3351,7 +3356,7 @@ function filterValidContests(contests) {
       }
       
   // Update contest display (do not show state prefix to avoid brief out-of-state flashes)
-  document.getElementById('contest-name').textContent = `${contestData.contest_name} (${year})`;
+  document.getElementById('contest-name').textContent = `${normalizeContestName(contestData.contest_name)} (${year})`;
       setStatus(`Applied Tennessee contest: ${contestData.contest_name} (${countiesProcessed} counties)`);
     }
 
