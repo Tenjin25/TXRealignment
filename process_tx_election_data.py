@@ -25,6 +25,9 @@ def aggregate_single_precinct_file(filepath, year):
             print(f"  Warning: No 'county' column in {filepath}")
             return None
         
+        # Convert votes to numeric (fixes string concatenation bug)
+        df['votes'] = pd.to_numeric(df['votes'], errors='coerce').fillna(0).astype(int)
+        
         # Aggregate to county level
         # Group by county, office, and candidate/party
         agg_data = df.groupby(['county', 'office', 'candidate', 'party'], dropna=False).agg({
@@ -73,6 +76,9 @@ def aggregate_precinct_to_county(precinct_dir, year):
     
     # Combine all precinct data
     combined = pd.concat(all_data, ignore_index=True)
+    
+    # Convert votes to numeric (fixes string concatenation bug)
+    combined['votes'] = pd.to_numeric(combined['votes'], errors='coerce').fillna(0).astype(int)
     
     # Aggregate to county level
     # Group by county, office, and candidate/party
@@ -295,7 +301,8 @@ def process_texas_election_data():
                 if 'President' in office or 'VicePresident' in office:
                     category = "presidential"
                     contest_key = "president"
-                elif 'U.S. Senate' in office or 'Senate' in office:
+                elif 'U.S. Senate' in office:
+                    # Match only U.S. Senate, not State Senate
                     category = "us_senate"
                     contest_key = "us_senate"
                 elif 'Lieutenant Governor' in office:
@@ -497,7 +504,9 @@ def process_texas_election_data():
                         # if "party_breakdown" in county_result:
                         #     del county_result["party_breakdown"]
                 
-                # Calculate statewide totals
+                # Calculate statewide totals - RESET first to avoid accumulation bug
+                contest["total_votes"] = 0
+                contest["other_votes"] = 0
                 for county_result in contest["results"].values():
                     contest["total_votes"] += county_result["total_votes"]
                     contest["other_votes"] += county_result["other_votes"]
