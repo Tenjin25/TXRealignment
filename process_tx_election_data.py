@@ -44,7 +44,7 @@ def aggregate_single_precinct_file(filepath, year):
         df = pd.read_csv(filepath)
         
         # Normalize column names to lowercase
-        df.columns = df.columns.str.lower()
+        df.columns = df.columns.str.lower().str.strip()
         
         # Ensure county column exists
         if 'county' not in df.columns:
@@ -290,7 +290,7 @@ def process_texas_election_data():
         2018: "20181106__tx__general__county.csv",
         2020: "20201103__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
         2022: "20221108__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
-        2024: "2024_General_Election_Returns.csv",  # Complete statewide data
+        2024: "2024_General_Election_Returns-Aligned.csv",  # Complete statewide VTD data
     }
     
     # Process each year
@@ -321,9 +321,14 @@ def process_texas_election_data():
                         continue
                 else:
                     # Read county-level CSV directly
-                    df = pd.read_csv(filepath)
-                    # Normalize column names to lowercase for consistency
-                    df.columns = df.columns.str.lower()
+                    # For files with quoted fields (like the 2024 VTD data), handle properly
+                    try:
+                        df = pd.read_csv(filepath)
+                    except pd.errors.ParserError:
+                        # Try with different parsing options for files with commas in quoted fields
+                        df = pd.read_csv(filepath, quotechar='"', skipinitialspace=True)
+                    # Normalize column names to lowercase and strip spaces for consistency
+                    df.columns = df.columns.str.lower().str.strip()
             else:
                 print(f"Warning: {filepath} not found, skipping year {year}")
                 continue
@@ -332,6 +337,17 @@ def process_texas_election_data():
             if year not in results["results_by_year"]:
                 results["results_by_year"][year] = {}
                 results["metadata"]["years_covered"].append(year)
+            
+            # Normalize party abbreviations to full names for consistency
+            if 'party' in df.columns:
+                party_map = {
+                    'D': 'DEM',
+                    'R': 'REP',
+                    'L': 'LIB',
+                    'G': 'GRN',
+                    'W': 'WI'
+                }
+                df['party'] = df['party'].map(lambda x: party_map.get(str(x).strip(), str(x).strip()) if pd.notna(x) else x)
             
             # Process by office type
             offices = df['office'].unique()
@@ -380,9 +396,11 @@ def process_texas_election_data():
                 # Skip NaN or non-string office values
                 if pd.isna(office) or not isinstance(office, str):
                     continue
-                # Normalize office for consistent classification
-                office_norm = normalize_office_name(office)
-                office_data = df[df['office'] == office].copy()
+                
+                # Store original office name and normalize for classification
+                original_office = str(office).strip()  # Remove leading/trailing whitespace
+                office_norm = normalize_office_name(original_office)
+                office_data = df[df['office'] == office].copy()  # Use original office for filtering
                 
                 # Determine contest category
                 # Use the normalized office name for classification
@@ -422,7 +440,7 @@ def process_texas_election_data():
                 # Initialize contest
                 if contest_key not in results["results_by_year"][year][category]:
                     results["results_by_year"][year][category][contest_key] = {
-                        "contest_name": office,
+                        "contest_name": original_office,  # Use cleaned office name
                         "year": year,
                         "results": {},
                         "dem_candidate": None,
@@ -442,7 +460,7 @@ def process_texas_election_data():
                     if norm_county not in contest["results"]:
                         contest["results"][norm_county] = {
                             "county": norm_county,
-                            "contest": office,
+                            "contest": original_office,  # Use cleaned office name
                             "year": str(year),
                             "dem_votes": 0,
                             "rep_votes": 0,
