@@ -31,8 +31,9 @@ This race is uniquely handled in the visualization with individual breakdowns fo
 ## Data Sources
 
 - County boundaries: U.S. Census Bureau TIGER/Line Shapefiles (2020)
-- Election results 2000-2018, 2024: OpenElections Project (https://github.com/openelections)
+- Election results 2000-2018: OpenElections Project (https://github.com/openelections)
 - Election results 2020, 2022: Precinct-level data from `election_data_TX.v06-aligned.csv`, aggregated to county level
+- Election results 2024: Texas Legislative Council. (2024). *Comprehensive Election Datasets - Compressed Format: 2024 General Election Returns*. Texas Open Data Portal. Retrieved from https://data.capitol.texas.gov/dataset/comprehensive-election-datasets-compressed-format/resource/e1cd6332-6a7a-4c78-ad2a-852268f6c7a2
 
 ## Files
 
