@@ -16,6 +16,79 @@ An interactive visualization of Texas election results from 2000-2024, showcasin
 - **15-Level Competitiveness Scale**: From "Annilation Democratic" to "Annihilation Republican"
 - **Interactive Mapbox GL Visualization**: County-level detail with hover tooltips
 
+## Political Trends & Analysis
+
+### Presidential Race Evolution (2000-2024)
+
+Texas has maintained its Republican lean in presidential elections, but with significant internal shifts:
+
+**Statewide Margins:**
+- **2000**: Bush (R+21.91%) - 3,799,639 vs Gore 2,433,746
+- **2008**: McCain (R+11.87%) - Lowest Republican margin until 2020
+- **2020**: Trump (R+5.66%) - Closest race since 1996
+- **2024**: Trump (R+13.88%) - Republican rebound
+
+**24-Year Net Shift**: Despite Trump's 2024 improvement, the state has shifted 8.03 points more Republican since 2000, driven largely by dramatic realignment in South Texas and rural areas offsetting urban Democratic gains.
+
+### The Great South Texas Realignment
+
+The most dramatic political shift in Texas has occurred along the Rio Grande Valley border:
+
+**Starr County** (Most Dramatic Swing):
+- 2000: D+54.6% → 2024: **R+16.1%** (70.6-point swing)
+- 2012: Peak at D+73.8%
+- Historic flip from one of Texas's bluest counties to Republican
+
+**Other Major Border Flips:**
+- **Zapata County**: D+26.4% (2000) → R+22.6% (2024) - 49-point swing
+- **Maverick County**: D+31.2% (2000) → R+18.6% (2024) - 50-point swing
+- **Hidalgo County** (McAllen): D+23.2% (2000) → R+2.9% (2024) - First Republican presidential win
+- **Cameron County** (Brownsville): D+8.9% (2000) → R+5.8% (2024)
+- **Webb County** (Laredo): D+16.2% (2000) → R+2.1% (2024)
+
+### Metropolitan Countercurrent
+
+While rural and border counties trended Republican, major metros shifted Democratic:
+
+**Urban Blue Shift:**
+- **Travis County** (Austin): R+5.9% (2000) → **D+40.1%** (2024) - 46-point Democratic swing
+- **Dallas County**: R+7.9% (2000) → **D+22.6%** (2024) - 30-point swing
+- **Harris County** (Houston): R+3.5% (2000) → **D+5.6%** (2024)
+
+**Suburban Transformation:**
+- **Collin County** (Plano/Frisco): R+49.9% (2000) → R+11.4% (2024) - 38-point Democratic swing
+- **Denton County**: R+43.6% (2000) → R+13.4% (2024) - 30-point Democratic swing
+- **Williamson County**: R+42.0% (2000) → R+2.5% (2024) - 39-point swing, now highly competitive
+- **Fort Bend County**: R+21.5% (2000) → **D+1.6%** (2024) - Flipped Democratic
+- **Tarrant County** (Fort Worth): R+24.6% (2000) → R+5.2% (2024) - Now a swing county
+
+### 2024 Battleground Counties
+
+The most competitive counties in the 2024 presidential race (under 6% margin):
+
+1. **Fort Bend County** (Houston suburbs): D+1.6% - 352,902 votes
+2. **Webb County** (Laredo): R+2.1% - 65,393 votes
+3. **Williamson County** (Austin suburbs): R+2.5% - 303,076 votes
+4. **Hidalgo County** (McAllen): R+2.9% - 215,277 votes
+5. **Tarrant County** (Fort Worth): R+5.2% - 811,127 votes
+6. **Harris County** (Houston): D+5.6% - 1,531,466 votes
+7. **Hays County** (San Marcos): D+5.7% - 123,966 votes
+8. **Cameron County** (Brownsville): R+5.8% - 115,249 votes
+
+### Major Metropolitan Results (2024)
+
+**Solidly Democratic:**
+- **Travis County** (Austin): D+40.1% - 569,749 votes
+- **Dallas County**: D+22.6% - 833,495 votes
+- **El Paso County**: D+15.3% - 248,280 votes
+- **Bexar County** (San Antonio): D+9.9% - 748,934 votes
+
+**Competitive/Republican:**
+- **Harris County** (Houston): D+5.6% - 1,531,466 votes (largest county, highly competitive)
+- **Tarrant County** (Fort Worth): R+5.2% - 811,127 votes
+- **Collin County** (Plano): R+11.5% - 501,649 votes
+- **Denton County**: R+13.4% - 442,024 votes
+
 ## Special Features
 
 ### 2006 Governor Race
