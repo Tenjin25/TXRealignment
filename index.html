@@ -1254,7 +1254,9 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
         'Comptroller',
         'Land Commissioner',
         'Agriculture Commissioner',
-        'Railroad Commissioner'
+        'Railroad Commissioner',
+        'Texas Supreme Court',
+        'Court of Criminal Appeals'
       ];
       // Group contests by office label
       const groupedByOffice = {};
@@ -1319,17 +1321,20 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
               else if (/INSURANCE/.test(cn)) officeLabel = 'Insurance Commissioner';
               else if (/AGRICULTURE|COMMISSIONER OF AGRICULTURE/.test(cn)) officeLabel = 'Agriculture Commissioner';
               else if (/SUPERINTENDENT|PUBLIC INSTRUCTION|SCHOOL SUPERINTENDENT/.test(cn)) officeLabel = 'Superintendent of Public Instruction';
-              else if (/SUPREME/.test(cn) || /JUSTICE/.test(cn) && /SUPREME/.test(cn)) officeLabel = 'NC Supreme Court';
-              else if (/COURT OF APPEALS|APPEALS|COURT OF APPEALS JUDGE/.test(cn)) officeLabel = 'Court of Appeals';
-              // If still generic 'Judicial' but contestName contains 'Supreme' map to NC Supreme Court
-              else if (officeLabel === 'Judicial' && /SUPREME/.test(cn)) officeLabel = 'NC Supreme Court';
+              // Texas judicial races
+              else if (/SUPREME COURT|SUPREME CT|SUP CT/.test(cn)) officeLabel = 'Texas Supreme Court';
+              else if (/CRIMINAL APPEALS|CCA/.test(cn)) officeLabel = 'Court of Criminal Appeals';
+              // NC judicial races
+              else if (/NC SUPREME/.test(cn)) officeLabel = 'NC Supreme Court';
+              else if (/COURT OF APPEALS|APPEALS|COURT OF APPEALS JUDGE/.test(cn) && !/CRIMINAL/.test(cn)) officeLabel = 'Court of Appeals';
             }
 
             // Only include allowed offices (also accept Statewide Offices and Judicial categories if they map)
             if (!allowedOffices.includes(officeLabel)) {
               // If it was grouped as generic Statewide Offices or Judicial, try to include as-is
-              if (officeLabel === 'Statewide Offices' || officeLabel === 'Judicial') {
-                // fall through only if we can map individual contest names below; otherwise skip
+              if (officeLabel === 'Statewide Offices' || officeLabel === 'Judicial' || 
+                  officeLabel === 'Texas Supreme Court' || officeLabel === 'Court of Criminal Appeals') {
+                // fall through - these are valid categories
               } else return;
             }
             // Exclude specific problematic contest names (case-insensitive, robust)
