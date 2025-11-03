@@ -26,8 +26,47 @@ An interactive visualization of Texas election results from 2000-2024, showcasin
   - Historical races back to 2000
 - **Normalized Data**: Consistent contest names and full candidate names across all years
 - **18 Multi-word County Names**: Properly formatted (La Salle, De Witt, El Paso, etc.)
-- **15-Level Competitiveness Scale**: From "Annilation Democratic" to "Annihilation Republican"
+- **15-Level Competitiveness Scale**: From "Annihilation Democratic" to "Annihilation Republican"
 - **Interactive Mapbox GL Visualization**: County-level detail with hover tooltips
+
+## Competitiveness Rating System
+
+The map uses color-coded categories to represent the competitiveness and margin of victory in each county. These categories help users quickly identify which areas are safe for each party, which are competitive, and where political realignment is occurring:
+
+### The 8-Level Scale (Applied to Both Parties)
+
+- **Tossup (±0.5% margin):** The margin is less than half a percentage point, indicating a true battleground with no clear favorite.
+- **Tilt (0.5-1% margin):** Extremely competitive, with only a slight edge for the winner.
+- **Lean (1-5.5% margin):** The area is competitive, with a modest advantage for the winning party.
+- **Likely (5.5-10% margin):** The winning party has a clear advantage, but the area could become competitive under the right circumstances.
+- **Safe (10-20% margin):** One party wins by 10-20 percentage points. The area is considered safe, but not impenetrable.
+- **Stronghold (20-30% margin):** One party wins by 20-30 percentage points. A reliably safe county for the winning party.
+- **Dominant (30-40% margin):** One party wins by 30-40 percentage points. A very safe seat, but slightly less extreme than Annihilation.
+- **Annihilation (40%+ margin):** One party wins by more than 40 percentage points. Indicates a landslide victory and a safe stronghold for the winning party.
+
+### 2024 Presidential Examples by Category
+
+**Democratic Counties:**
+- **Travis County** (Austin): D+40.05% = "Annihilation Democratic"
+- **Dallas County**: D+22.62% = "Stronghold Democratic"
+- **El Paso County**: D+15.32% = "Safe Democratic"
+- **Bexar County** (San Antonio): D+9.86% = "Likely Democratic"
+- **Harris County** (Houston): D+5.62% = "Likely Democratic"
+- **Hays County** (San Marcos): D+5.72% = "Likely Democratic"
+- **Fort Bend County**: D+1.62% = "Lean Democratic"
+
+**Competitive:**
+- **Williamson County** (Austin suburbs): R+2.49% = "Lean Republican"
+- **Webb County** (Laredo): R+2.14% = "Lean Republican"
+- **Hidalgo County** (McAllen): R+2.90% = "Lean Republican"
+
+**Republican Counties:**
+- **Tarrant County** (Fort Worth): R+5.19% = "Likely Republican"
+- **Cameron County** (Brownsville): R+5.84% = "Likely Republican"
+- **Collin County** (Plano): R+11.45% = "Safe Republican"
+- **Denton County**: R+13.35% = "Safe Republican"
+- **Montgomery County** (The Woodlands): R+45.91% = "Annihilation Republican"
+- **King County** (smallest county): R+90%+ = "Annihilation Republican" (extreme)
 
 ## Political Trends & Analysis
 
@@ -79,66 +118,74 @@ While rural and border counties trended Republican, major metros shifted Democra
 
 The most competitive counties in the 2024 presidential race (under 6% margin):
 
-1. **Fort Bend County** (Houston suburbs): D+1.6% - 352,902 votes
-2. **Webb County** (Laredo): R+2.1% - 65,393 votes
-3. **Williamson County** (Austin suburbs): R+2.5% - 303,076 votes
-4. **Hidalgo County** (McAllen): R+2.9% - 215,277 votes
-5. **Tarrant County** (Fort Worth): R+5.2% - 811,127 votes
-6. **Harris County** (Houston): D+5.6% - 1,531,466 votes
-7. **Hays County** (San Marcos): D+5.7% - 123,966 votes
-8. **Cameron County** (Brownsville): R+5.8% - 115,249 votes
+1. **Fort Bend County** (Houston suburbs): D+1.62% - 352,902 votes
+2. **Webb County** (Laredo): R+2.14% - 65,393 votes
+3. **Williamson County** (Austin suburbs): R+2.49% - 303,076 votes
+4. **Hidalgo County** (McAllen): R+2.90% - 215,277 votes
+5. **Tarrant County** (Fort Worth): R+5.19% - 811,127 votes
+6. **Harris County** (Houston): D+5.62% - 1,531,466 votes
+7. **Hays County** (San Marcos): D+5.72% - 123,966 votes
+8. **Cameron County** (Brownsville): R+5.84% - 115,249 votes
 
 ### Major Metropolitan Results (2024)
 
 **Solidly Democratic:**
-- **Travis County** (Austin): D+40.1% - 569,749 votes
-- **Dallas County**: D+22.6% - 833,495 votes
-- **El Paso County**: D+15.3% - 248,280 votes
-- **Bexar County** (San Antonio): D+9.9% - 748,934 votes
+- **Travis County** (Austin): D+40.05% - 569,749 votes
+- **Dallas County**: D+22.62% - 833,495 votes
+- **El Paso County**: D+15.32% - 248,280 votes
+- **Bexar County** (San Antonio): D+9.86% - 748,934 votes
 
 **Competitive/Republican:**
-- **Harris County** (Houston): D+5.6% - 1,531,466 votes (largest county, highly competitive)
-- **Tarrant County** (Fort Worth): R+5.2% - 811,127 votes
-- **Collin County** (Plano): R+11.5% - 501,649 votes
-- **Denton County**: R+13.4% - 442,024 votes
+- **Harris County** (Houston): D+5.62% - 1,531,466 votes (largest county, highly competitive)
+- **Tarrant County** (Fort Worth): R+5.19% - 811,127 votes
+- **Collin County** (Plano): R+11.45% - 501,649 votes
+- **Denton County**: R+13.35% - 442,024 votes
 
 ## Notable County Profiles
 
 ### Montgomery County: Growth Without Moderation
 
-Montgomery County (The Woodlands area, north of Houston) presents a fascinating counterexample to the typical suburban shift pattern. Despite experiencing explosive growth similar to other major suburban counties, it has remained consistently Republican:
+Montgomery County (The Woodlands area, north of Houston) presents a fascinating counterexample to the typical suburban shift pattern. Despite experiencing explosive growth similar to other major suburban counties, it has remained consistently **"Annihilation Republican"**:
 
 **Growth & Political Stability (2000-2024):**
 - **Population Growth**: 193% increase in voter turnout (103,886 → 304,241 votes)
-- **Political Trend**: R+55.2% (2000) → R+45.9% (2024) - Only 9.3-point Democratic shift
-- **Peak Republicanism**: R+61.5% in 2012 (Romney's 80.7% of the vote)
+- **Political Trend**: R+55.17% (2000) → R+45.91% (2024) - Only 9.26-point Democratic shift
+- **Competitiveness Rating**: "Annihilation Republican" (40%+ margin) in both 2000 and 2024
+- **Peak Republicanism**: R+61.47% in 2012 (Romney's 80.7% of the vote)
 
 **Timeline:**
-- 2000: R+55.2% (Bush 77.6%, Gore 22.4%)
-- 2008: R+53.1% (McCain 76.6%, Obama 23.4%)
-- 2016: R+53.3% (Trump 76.6%, Clinton 23.4%)
-- 2020: R+44.4% (Trump 72.2%, Biden 27.8%) - Smallest margin ever
-- 2024: R+45.9% (Trump 73.0%, Harris 27.0%) - Slight Republican rebound
+- 2000: R+55.17% (Bush 77.6%, Gore 22.4%)
+- 2008: R+53.12% (McCain 76.6%, Obama 23.4%)
+- 2016: R+53.27% (Trump 76.6%, Clinton 23.4%)
+- 2020: R+44.44% (Trump 72.2%, Biden 27.8%) - Smallest margin ever
+- 2024: R+45.91% (Trump 73.0%, Harris 27.0%) - Slight Republican rebound
 
 **Comparison to Similar Growth Counties:**
 Unlike other fast-growing suburban counties, Montgomery has resisted the blue shift:
-- **Williamson County** (Austin suburbs): 231% growth, 39.5-point Democratic swing
-- **Collin County** (Dallas suburbs): 193% growth, 38.4-point Democratic swing
-- **Fort Bend County** (Houston suburbs): 191% growth, 23.1-point Democratic swing, now D+1.6%
-- **Montgomery County**: 193% growth, only 9.3-point Democratic swing, still R+45.9%
+- **Williamson County** (Austin suburbs): 231% growth, 39.47-point Democratic swing
+- **Collin County** (Dallas suburbs): 193% growth, 38.41-point Democratic swing
+- **Fort Bend County** (Houston suburbs): 191% growth, 23.08-point Democratic swing, now D+1.62%
+- **Montgomery County**: 193% growth, only 9.26-point Democratic swing, still R+45.91%
 
 **Why the Difference?**
 Montgomery County's demographics differ from other growth suburbs - it's attracted more conservative-leaning professionals and retirees to planned communities like The Woodlands, while other suburban counties have seen more diverse, younger, and educated professional migration.
+
+**Competitiveness Comparison (2024):**
+- **Montgomery**: "Annihilation Republican" (R+45.91%) - Still deep red
+- **Williamson**: "Lean Republican" (R+2.49%) - Now highly competitive
+- **Collin**: "Safe Republican" (R+11.45%) - Shifted from Annihilation to merely Safe
+- **Fort Bend**: "Lean Democratic" (D+1.62%) - Flipped to competitive Democratic
+- **Tarrant**: "Likely Republican" (R+5.19%) - Now a battleground
 
 ### Starr County: The Ultimate Bellwether Flip
 
 Starr County in South Texas represents the most dramatic political transformation in modern Texas history:
 
 **The Transformation:**
-- **2000**: D+54.6% - One of the most Democratic counties in Texas
-- **2012**: D+73.8% - Peak Democratic performance (Obama 86.9%)
-- **2020**: D+5.1% - Collapse to single digits
-- **2024**: R+16.1% - Complete flip to Republican
+- **2000**: D+54.59% - "Annihilation Democratic" (40%+ margin) - One of the bluest counties in Texas
+- **2012**: D+73.80% - "Annihilation Democratic" (40%+ margin) - Peak Democratic performance (Obama 86.9%)
+- **2020**: D+5.11% - "Likely Democratic" (5.5-10% margin) - Collapsed to barely Democratic
+- **2024**: R+16.06% - "Safe Republican" (10-20% margin) - Complete flip to solid Republican
 
 **What Happened?**
 This 70.6-point swing reflects broader trends in the Rio Grande Valley:
@@ -156,9 +203,9 @@ Starr County's flip symbolizes the broader South Texas realignment, where histor
 Travis County (Austin) exemplifies rapid urbanization driving political change:
 
 **The Blue Wave:**
-- **2000**: R+5.9% - Narrowly Republican
-- **2008**: D+27.9% - Obama flipped it decisively
-- **2024**: D+40.1% - Now solidly Democratic
+- **2000**: R+5.89% - "Likely Republican" (5.5-10% margin) - Narrowly Republican
+- **2008**: D+29.93% - "Stronghold Democratic" (20-30% margin) - Obama flipped it decisively
+- **2024**: D+40.05% - "Annihilation Democratic" (40%+ margin) - Now deep blue stronghold
 
 **46-Point Swing Drivers:**
 - Tech industry growth attracting educated professionals
