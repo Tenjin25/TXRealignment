@@ -8,7 +8,32 @@ def normalize_county_name(name):
     """Normalize county name for consistent matching"""
     if pd.isna(name):
         return ""
-    return str(name).upper().strip()
+    
+    name = str(name).upper().strip()
+    
+    # Handle multi-word county names that appear as single words in CSV
+    county_mappings = {
+        'LASALLE': 'LA SALLE',
+        'DEWITT': 'DE WITT',
+        'DEAFSMITH': 'DEAF SMITH',
+        'ELPASO': 'EL PASO',
+        'FORTBEND': 'FORT BEND',
+        'JEFFDAVIS': 'JEFF DAVIS',
+        'JIMHOGG': 'JIM HOGG',
+        'JIMWELLS': 'JIM WELLS',
+        'LIVEOAK': 'LIVE OAK',
+        'PALOPINTO': 'PALO PINTO',
+        'REDRIVER': 'RED RIVER',
+        'SANAUGUSTINE': 'SAN AUGUSTINE',
+        'SANJACINTO': 'SAN JACINTO',
+        'SANPATRICIO': 'SAN PATRICIO',
+        'SANSABA': 'SAN SABA',
+        'TOMGREEN': 'TOM GREEN',
+        'VALVERDE': 'VAL VERDE',
+        'VANZANDT': 'VAN ZANDT'
+    }
+    
+    return county_mappings.get(name, name)
 
 def get_full_candidate_name(last_name, year, office, party):
     """Get full candidate name from last name for major races"""
@@ -29,6 +54,37 @@ def get_full_candidate_name(last_name, year, office, party):
                 return 'Colin Allred'
             elif last_name.lower() in ['cruz', 'ted']:
                 return 'Ted Cruz'
+    
+    # 2022 statewide candidates
+    elif year == 2022:
+        office_lower = office.lower()
+        last_lower = last_name.lower()
+        
+        if 'land' in office_lower:
+            if last_lower == 'buckingham':
+                return 'Dawn Buckingham'
+            elif last_lower == 'kleberg':
+                return 'Jay Kleberg'
+            elif last_lower == 'menger':
+                return 'Alfred Menger'
+            elif last_lower == 'molison':
+                return 'Michael Molison'
+        
+        elif 'ag' in office_lower or 'agriculture' in office_lower:
+            if last_lower == 'miller':
+                return 'Sid Miller'
+            elif last_lower == 'hays':
+                return 'Susan Hays'
+        
+        elif 'rr' in office_lower or 'railroad' in office_lower:
+            if last_lower == 'christian':
+                return 'Wayne Christian'
+            elif last_lower == 'warford':
+                return 'Luke Warford'
+            elif last_lower == 'crow':
+                return 'Hunter Crow'
+            elif last_lower == 'diez':
+                return 'Jaime Diez'
     
     # For other years/candidates, return the last name as-is
     return last_name
