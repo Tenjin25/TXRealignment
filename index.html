@@ -1368,7 +1368,10 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
         function buildGranularContestDropdown() {
           const sel = document.getElementById('contestSelect');
           sel.innerHTML = '<option value="">Select a Contest...</option>';
-          Object.entries(groupedByOffice).forEach(([officeLabel, contests]) => {
+          // Ensure optgroups are ordered by allowedOffices
+          allowedOffices.forEach(officeLabel => {
+            const contests = groupedByOffice[officeLabel];
+            if (!contests) return;
             const og = document.createElement('optgroup');
             og.label = officeLabel;
             contests.forEach(item => {
