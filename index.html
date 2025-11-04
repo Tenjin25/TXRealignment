@@ -2892,7 +2892,7 @@ function toggleSidebar() {
   populateContestSelectFromElectionJSON(electionData);
         
         if (CONFIG.fitBounds && Array.isArray(CONFIG.fitBounds) && CONFIG.fitBounds.length === 2 && CONFIG.fitBounds[0] && CONFIG.fitBounds[1]) {
-          map.fitBounds(CONFIG.fitBounds, { padding: 20 });
+          map.fitBounds(CONFIG.fitBounds, { padding: 20, duration: 0 });
         } else {
           // Try a sensible fallback: compute bounds from the counties source if available
           try {
@@ -2900,7 +2900,7 @@ function toggleSidebar() {
             const geo = countiesSrc && (countiesSrc._data || countiesSrc.data);
             if (geo && geo.features && geo.features.length) {
               const bbox = turf.bbox(geo); // [minX, minY, maxX, maxY]
-              map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 20 });
+              map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 20, duration: 0 });
             } else {
               console.warn('fitBounds not called: CONFIG.fitBounds is missing or invalid, and no counties source available to compute bounds');
             }
