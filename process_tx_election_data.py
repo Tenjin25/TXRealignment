@@ -117,6 +117,29 @@ def get_full_candidate_name(last_name, year, office, party):
                 return 'Hunter Crow'
             elif last_lower == 'diez':
                 return 'Jaime Diez'
+        # 2022 Judicial
+        elif 'supreme court' in office_lower or 'sup ct' in office_lower:
+            if last_lower == 'lehrmann':
+                return 'Debra Lehrmann'
+            elif last_lower == 'nowell':
+                return 'Erin Nowell'
+            elif last_lower == 'huddle':
+                return 'Rebeca Huddle'
+            elif last_lower == 'reichek':
+                return 'Amanda Reichek'
+            elif last_lower == 'young':
+                return 'Evan Young'
+            elif last_lower == 'maldonado':
+                return 'Julia Maldonado'
+        elif 'crim' in office_lower or 'cca' in office_lower:
+            if last_lower == 'walker':
+                return 'Scott Walker'
+            elif last_lower == 'huffman':
+                return 'Dana Huffman'
+            elif last_lower == 'mcclure':
+                return 'Jesse McClure III'
+            elif last_lower == 'johnson':
+                return 'Robert Johnson'
     
     # 2020 candidates
     elif year == 2020:
