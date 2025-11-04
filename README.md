@@ -348,6 +348,37 @@ margin_percentage = ((dem_votes - rep_votes) / (dem_votes + rep_votes)) * 100
 - **Cross-Year Consistency**: Verify county name consistency across all years
 - **Candidate Name Verification**: Match against official ballot names
 
+### Critical Fix: 2014/2018 VTD Data Aggregation (November 2024)
+
+**Issue Discovered:**
+Initial VTD aggregation for 2014 and 2018 incorrectly swapped Ellis County and El Paso County data due to a mistaken assumption about mislabeled source files.
+
+**Impact Before Fix:**
+- Ellis County (Republican Dallas exurb) showed Democratic majorities
+- El Paso County (Democratic border county) showed Republican majorities
+- County-level visualizations displayed incorrect political alignments
+
+**Root Cause:**
+The VTD CSV files correctly label rows as 'ELLIS' for Ellis County and 'EL PASO' for El Paso County. Initial processing code mistakenly attempted to "compensate" for a perceived swap by reading the opposite county labels.
+
+**Solution Implemented:**
+- Corrected `aggregate_ellis_from_vtd()` to read rows labeled 'ELLIS'
+- Corrected `aggregate_elpaso_from_vtd()` to read rows labeled 'EL PASO'
+- Re-ran comprehensive verification across all 2014 and 2018 contests
+
+**Verification Results:**
+- ✅ Ellis County now correctly shows Republican majorities (e.g., 2018 US Senate: 68% REP)
+- ✅ El Paso County now correctly shows Democratic majorities (e.g., 2018 US Senate: 75% DEM)
+- ✅ Statewide totals match official Texas SOS results exactly
+- ✅ All 254 counties verified across 16 major statewide contests (2014 & 2018)
+
+**Files Modified:**
+- `process_tx_election_data.py` - Lines 434-566 (aggregation functions)
+- Added verification scripts: `verify_anchor_counties.py`, `verify_2024_totals.py`
+
+**Documentation:**
+See `COUNTY_SWAP_FIX_SUMMARY.md` for detailed technical analysis.
+
 ## Data Quality & Normalization
 
 ### County Name Handling

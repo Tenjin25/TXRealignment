@@ -336,51 +336,225 @@ def get_competitiveness_color(category, party):
     
     return color_map.get(party, {}).get(category, "#cccccc")
 
+def normalize_office_name(office_name):
+    """Normalize common office name variants to canonical names.
+
+    Examples handled:
+    - 'U.S. Sen' -> 'U.S. Senate'
+    - 'US Sen' / 'U.S. Senate' / 'U.S. Sen.' -> 'U.S. Senate'
+    - 'President' variants -> 'President'
+    - Judicial races with place numbers and variations
+    - keeps original if no mapping applies
+    """
+    if pd.isna(office_name):
+        return ''
+    s = str(office_name).strip()
+    low = s.lower()
+
+    # Presidential
+    if 'president' in low:
+        return 'President'
+
+    # U.S. Senate variations
+    # match 'u.s. sen', 'u.s. senate', 'us sen', 'us senate', 'u.s. sen.' etc.
+    if ('u.s.' in low or 'us ' in low or low.startswith('u.s') or low.startswith('us')) and 'sen' in low:
+        return 'U.S. Senate'
+
+    # Governor / statewide common names
+    if 'lieutenant' in low and 'governor' in low:
+        return 'Lieutenant Governor'
+    if low.startswith('lt.') or low.startswith('lt '):
+        return 'Lieutenant Governor'
+    if 'governor' in low:
+        return 'Governor'
+    if 'attorney' in low and 'gen' in low:
+        return 'Attorney General'
+    if 'comptroller' in low:
+        return 'Comptroller'
+    if 'agriculture' in low or low.startswith('ag comm'):
+        return 'Agriculture Commissioner'
+    if 'land' in low and 'comm' in low:
+        return 'Land Commissioner'
+    if 'railroad' in low or low.startswith('rr comm'):
+        return 'Railroad Commissioner'
+
+    # Texas Supreme Court
+    if 'supreme court' in low or 'sup ct' in low or 'sup crt' in low:
+        # Chief Justice
+        if 'chief' in low:
+            return 'Chief Justice, Supreme Court'
+        # Associate Justices with place numbers
+        import re
+        # Match place numbers in various formats: "Place 6", "Pl 6", "P6", "Sup Ct 6", etc.
+        # First try standard place patterns
+        place_match = re.search(r'(?:place|pl\.?|p)\s*(\d+)', low)
+        if not place_match:
+            # Try bare number after "ct", "crt", or "court"
+            place_match = re.search(r'(?:ct|crt|court)\s+(\d+)', low)
+        if place_match:
+            place_num = place_match.group(1)
+            # Check for unexpired term
+            if 'unexp' in low:
+                return f'Justice, Supreme Court, Place {place_num} (Unexpired)'
+            return f'Justice, Supreme Court, Place {place_num}'
+        # Generic justice without place number
+        if 'justice' in low:
+            return 'Justice, Supreme Court'
+
+    # Court of Criminal Appeals
+    if 'criminal appeals' in low or 'cca' in low:
+        # Presiding Judge
+        if 'presiding' in low or 'pres judge' in low:
+            return 'Presiding Judge, Court of Criminal Appeals'
+        # Judges with place numbers
+        import re
+        # Match place numbers: "Place 3", "Pl 3", "P3", "CCA 3", etc.
+        # First try standard place patterns
+        place_match = re.search(r'(?:place|pl\.?|p)\s*(\d+)', low)
+        if not place_match:
+            # Try bare number after "cca"
+            place_match = re.search(r'cca\s+(\d+)', low)
+        if place_match:
+            place_num = place_match.group(1)
+            return f'Judge, Court of Criminal Appeals, Place {place_num}'
+        # Generic judge without place number
+        if 'judge' in low:
+            return 'Judge, Court of Criminal Appeals'
+
+    # Default: return original trimmed string
+    return s
+
 def process_texas_election_data():
-    # --- AGGREGATE AND OVERWRITE ELLIS COUNTY RESULTS FOR 2014 AND 2018 ---
-    import pandas as pd
-    def aggregate_ellis_from_vtd(year, csv_path):
-        df = pd.read_csv(csv_path, on_bad_lines='skip')
-        df.columns = df.columns.str.strip()
-        # Only keep Ellis County rows
-        ellis = df[df['County'].str.strip().str.upper() == 'ELLIS']
-        # Aggregate by contest and party
-        contests = ellis['Office'].unique()
-        agg_results = {}
-        for contest in contests:
-            sub = ellis[ellis['Office'] == contest]
-            dem_votes = sub[sub['Party'].str.upper() == 'D']['Votes'].sum()
-            rep_votes = sub[sub['Party'].str.upper() == 'R']['Votes'].sum()
-            other_votes = sub[~sub['Party'].str.upper().isin(['D','R'])]['Votes'].sum()
-            agg_results[contest] = {
-                'dem_votes': int(dem_votes),
-                'rep_votes': int(rep_votes),
-                'other_votes': int(other_votes),
-                'total_votes': int(dem_votes + rep_votes + other_votes),
-                'two_party_total': int(dem_votes + rep_votes)
-            }
-        return agg_results
-
-    # Overwrite Ellis County results for 2018
-    ellis_2018 = aggregate_ellis_from_vtd(2018, 'Election_Data/2018_General_Election_Returns-aligned.csv')
-    for cat in results['results_by_year'].get(2018, {}):
-        for key, contest in results['results_by_year'][2018][cat].items():
-            contest_name = contest.get('contest_name', key)
-            if contest_name in ellis_2018:
-                contest['results']['ELLIS'].update(ellis_2018[contest_name])
-
-        # Overwrite Ellis County results for 2014
-        ellis_2014 = aggregate_ellis_from_vtd(2014, 'Election_Data/2014_General_Election_Returns.csv')
-        for cat in results['results_by_year'].get(2014, {}):
-            for key, contest in results['results_by_year'][2014][cat].items():
-                contest_name = contest.get('contest_name', key)
-                if contest_name in ellis_2014:
-                    contest['results']['ELLIS'].update(ellis_2014[contest_name])
-    # TODO: Repeat for 2014 if VTD-aligned CSV is available
     """
     Process Texas election CSV files and create a JSON structure
     similar to the NC map format
     """
+    
+    # Helper function to aggregate Ellis County from VTD data
+    def aggregate_ellis_from_vtd(year, csv_path):
+        """Aggregate Ellis County results from VTD-level CSV
+        
+        NOTE: The VTD CSV has El Paso and Ellis county labels swapped!
+        - Rows labeled "El Paso" are actually Ellis County data
+        - Rows labeled "Ellis" are actually El Paso County data
+        We fix this by reading "El Paso" when we want Ellis data.
+        """
+        try:
+            df = pd.read_csv(csv_path, on_bad_lines='skip')
+            # Strip all column names of leading/trailing whitespace
+            df.columns = df.columns.str.strip()
+            
+            # Strip all string values of leading/trailing whitespace
+            for col in df.columns:
+                if df[col].dtype == 'object':
+                    df[col] = df[col].str.strip()
+            
+            # NOTE: earlier we attempted to compensate for a mislabeled source file.
+            # Correct mapping: rows labeled 'ELLIS' in the VTD file contain Ellis County data,
+            # and rows labeled 'EL PASO' contain El Paso County data. Read 'ELLIS' here.
+            ellis = df[df['County'].str.upper() == 'ELLIS'].copy()
+            
+            if ellis.empty:
+                print(f"  Warning: No Ellis County data found in {csv_path}")
+                print(f"  (Looking for rows where County == 'ELLIS')")
+                return {}
+            
+            print(f"  Found {len(ellis)} Ellis County VTD rows for {year} (rows labeled 'ELLIS')")
+            
+            # Ensure numeric votes
+            ellis['Votes'] = pd.to_numeric(ellis['Votes'], errors='coerce').fillna(0).astype(int)
+            
+            # Aggregate by contest and party
+            contests = ellis['Office'].unique()
+            agg_results = {}
+            
+            for contest in contests:
+                sub = ellis[ellis['Office'] == contest]
+                dem_votes = sub[sub['Party'].str.upper() == 'D']['Votes'].sum()
+                rep_votes = sub[sub['Party'].str.upper() == 'R']['Votes'].sum()
+                other_votes = sub[~sub['Party'].str.upper().isin(['D','R'])]['Votes'].sum()
+                
+                # Store with original contest name - we'll normalize when matching
+                agg_results[contest] = {
+                    'dem_votes': int(dem_votes),
+                    'rep_votes': int(rep_votes),
+                    'other_votes': int(other_votes),
+                    'total_votes': int(dem_votes + rep_votes + other_votes),
+                    'two_party_total': int(dem_votes + rep_votes)
+                }
+                
+                print(f"    {contest}: DEM {int(dem_votes)}, REP {int(rep_votes)}, Other {int(other_votes)}")
+            
+            print(f"  Aggregated Ellis County for {year}: {len(agg_results)} contests")
+            return agg_results
+            
+        except Exception as e:
+            print(f"  Error aggregating Ellis County for {year}: {e}")
+            import traceback
+            traceback.print_exc()
+            return {}
+    
+    # Helper function to aggregate El Paso County from VTD data
+    def aggregate_elpaso_from_vtd(year, csv_path):
+        """Aggregate El Paso County results from VTD-level CSV
+        
+        NOTE: The VTD CSV has El Paso and Ellis county labels swapped!
+        - Rows labeled "El Paso" are actually Ellis County data
+        - Rows labeled "Ellis" are actually El Paso County data
+        We fix this by reading "Ellis" when we want El Paso data.
+        """
+        try:
+            df = pd.read_csv(csv_path, on_bad_lines='skip')
+            # Strip all column names of leading/trailing whitespace
+            df.columns = df.columns.str.strip()
+            
+            # Strip all string values of leading/trailing whitespace
+            for col in df.columns:
+                if df[col].dtype == 'object':
+                    df[col] = df[col].str.strip()
+            
+            # Correct mapping: rows labeled 'EL PASO' in the VTD file contain El Paso County data.
+            elpaso = df[df['County'].str.upper() == 'EL PASO'].copy()
+            
+            if elpaso.empty:
+                print(f"  Warning: No El Paso County data found in {csv_path}")
+                print(f"  (Looking for rows where County == 'EL PASO')")
+                return {}
+            
+            print(f"  Found {len(elpaso)} El Paso County VTD rows for {year} (rows labeled 'EL PASO')")
+            
+            # Ensure numeric votes
+            elpaso['Votes'] = pd.to_numeric(elpaso['Votes'], errors='coerce').fillna(0).astype(int)
+            
+            # Aggregate by contest and party
+            contests = elpaso['Office'].unique()
+            agg_results = {}
+            
+            for contest in contests:
+                sub = elpaso[elpaso['Office'] == contest]
+                dem_votes = sub[sub['Party'].str.upper() == 'D']['Votes'].sum()
+                rep_votes = sub[sub['Party'].str.upper() == 'R']['Votes'].sum()
+                other_votes = sub[~sub['Party'].str.upper().isin(['D','R'])]['Votes'].sum()
+                
+                # Store with original contest name - we'll normalize when matching
+                agg_results[contest] = {
+                    'dem_votes': int(dem_votes),
+                    'rep_votes': int(rep_votes),
+                    'other_votes': int(other_votes),
+                    'total_votes': int(dem_votes + rep_votes + other_votes),
+                    'two_party_total': int(dem_votes + rep_votes)
+                }
+                
+                print(f"    {contest}: DEM {int(dem_votes)}, REP {int(rep_votes)}, Other {int(other_votes)}")
+            
+            print(f"  Aggregated El Paso County for {year}: {len(agg_results)} contests")
+            return agg_results
+            
+        except Exception as e:
+            print(f"  Error aggregating El Paso County for {year}: {e}")
+            import traceback
+            traceback.print_exc()
+            return {}
     
     # Base directory for election data
     election_dir = Path("Election_Data")
@@ -591,86 +765,6 @@ def process_texas_election_data():
             
             # Process by office type
             offices = df['office'].unique()
-
-            def normalize_office_name(office_name):
-                """Normalize common office name variants to canonical names.
-
-                Examples handled:
-                - 'U.S. Sen' -> 'U.S. Senate'
-                - 'US Sen' / 'U.S. Senate' / 'U.S. Sen.' -> 'U.S. Senate'
-                - 'President' variants -> 'President'
-                - Judicial races with place numbers and variations
-                - keeps original if no mapping applies
-                """
-                if pd.isna(office_name):
-                    return ''
-                s = str(office_name).strip()
-                low = s.lower()
-
-                # Presidential
-                if 'president' in low:
-                    return 'President'
-
-                # U.S. Senate variations
-                # match 'u.s. sen', 'u.s. senate', 'us sen', 'us senate', 'u.s. sen.' etc.
-                if ('u.s.' in low or 'us ' in low or low.startswith('u.s') or low.startswith('us')) and 'sen' in low:
-                    return 'U.S. Senate'
-
-                # Governor / statewide common names
-                if 'lieutenant' in low and 'governor' in low:
-                    return 'Lieutenant Governor'
-                if low.startswith('lt.') or low.startswith('lt '):
-                    return 'Lieutenant Governor'
-                if 'governor' in low:
-                    return 'Governor'
-                if 'attorney' in low and 'gen' in low:
-                    return 'Attorney General'
-                if 'comptroller' in low:
-                    return 'Comptroller'
-                if 'agriculture' in low or low.startswith('ag comm'):
-                    return 'Agriculture Commissioner'
-                if 'land' in low and 'comm' in low:
-                    return 'Land Commissioner'
-                if 'railroad' in low or low.startswith('rr comm'):
-                    return 'Railroad Commissioner'
-
-                # Texas Supreme Court
-                if 'supreme court' in low or 'sup ct' in low or 'sup crt' in low:
-                    # Chief Justice
-                    if 'chief' in low:
-                        return 'Chief Justice, Supreme Court'
-                    # Associate Justices with place numbers
-                    import re
-                    # Match place numbers in various formats: "Place 6", "Pl 6", "P6", etc.
-                    place_match = re.search(r'(?:place|pl\.?|p)\s*(\d+)', low)
-                    if place_match:
-                        place_num = place_match.group(1)
-                        # Check for unexpired term
-                        if 'unexp' in low:
-                            return f'Justice, Supreme Court, Place {place_num} (Unexpired)'
-                        return f'Justice, Supreme Court, Place {place_num}'
-                    # Generic justice without place number
-                    if 'justice' in low:
-                        return 'Justice, Supreme Court'
-
-                # Court of Criminal Appeals
-                if 'criminal appeals' in low or 'cca' in low:
-                    # Presiding Judge
-                    if 'presiding' in low or 'pres judge' in low:
-                        return 'Presiding Judge, Court of Criminal Appeals'
-                    # Judges with place numbers
-                    import re
-                    # Match place numbers: "Place 3", "Pl 3", "P3", "3", etc.
-                    place_match = re.search(r'(?:place|pl\.?|p)\s*(\d+)', low)
-                    if place_match:
-                        place_num = place_match.group(1)
-                        return f'Judge, Court of Criminal Appeals, Place {place_num}'
-                    # Generic judge without place number
-                    if 'judge' in low:
-                        return 'Judge, Court of Criminal Appeals'
-
-                # Default: return original trimmed string
-                return s
 
             for office in offices:
                 # Skip NaN or non-string office values
@@ -1277,6 +1371,387 @@ def process_texas_election_data():
         if str(res.get("contest", "")).lower() == "railroad commissioner" and int(res.get("year", 0)) == 2020:
             res["dem_candidate"] = "Chrysta Castaneda"
             res["rep_candidate"] = "Jim Wright"
+    
+    # --- FIX ELLIS COUNTY AGGREGATION FOR 2014 AND 2018 ---
+    print("\nFixing Ellis County aggregation from VTD data...")
+    
+    # Aggregate Ellis County for 2018
+    ellis_2018 = aggregate_ellis_from_vtd(2018, 'Election_Data/2018_General_Election_Returns-aligned.csv')
+    if ellis_2018:
+        # Create a normalized lookup for ellis results
+        # Map from normalized office names to VTD office names
+        normalized_ellis_map = {}
+        for vtd_office_name in ellis_2018.keys():
+            norm_name = normalize_office_name(vtd_office_name)
+            normalized_ellis_map[norm_name] = vtd_office_name
+        
+        for cat in results['results_by_year'].get(2018, {}):
+            for key, contest in results['results_by_year'][2018][cat].items():
+                contest_name = contest.get('contest_name', key)
+                
+                # Try to find matching Ellis data using normalized name
+                if contest_name in normalized_ellis_map and 'ELLIS' in contest['results']:
+                    vtd_office = normalized_ellis_map[contest_name]
+                    print(f"  Updating Ellis County for {contest_name} (2018) from VTD '{vtd_office}'")
+                    contest['results']['ELLIS'].update(ellis_2018[vtd_office])
+                    # Recalculate competitiveness after update
+                    ellis_result = contest['results']['ELLIS']
+                    if ellis_result['total_votes'] > 0:
+                        dem_pct = (ellis_result['dem_votes'] / ellis_result['total_votes']) * 100
+                        rep_pct = (ellis_result['rep_votes'] / ellis_result['total_votes']) * 100
+                        margin_pct = abs(dem_pct - rep_pct)
+                        winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
+                        
+                        if margin_pct >= 40:
+                            category_name = "Annihilation"
+                        elif margin_pct >= 30:
+                            category_name = "Dominant"
+                        elif margin_pct >= 20:
+                            category_name = "Stronghold"
+                        elif margin_pct >= 10:
+                            category_name = "Safe"
+                        elif margin_pct >= 5.5:
+                            category_name = "Likely"
+                        elif margin_pct >= 1:
+                            category_name = "Lean"
+                        elif margin_pct >= 0.5:
+                            category_name = "Tilt"
+                        else:
+                            category_name = "Tossup"
+                            winner = "Tossup"
+                        
+                        color = get_competitiveness_color(category_name, winner)
+                        code = "TOSSUP" if winner == "Tossup" else f"{'R' if winner == 'Republican' else 'D'}_{category_name.upper()}"
+                        
+                        ellis_result["competitiveness"] = {
+                            "category": category_name,
+                            "party": winner,
+                            "code": code,
+                            "color": color,
+                            "description": f"{category_name} {winner}" if winner != "Tossup" else "Tossup"
+                        }
+                        ellis_result["margin"] = ellis_result["dem_votes"] - ellis_result["rep_votes"]
+                        ellis_result["margin_pct"] = round(margin_pct, 2)
+                        ellis_result["winner"] = "DEM" if dem_pct > rep_pct else ("REP" if rep_pct > dem_pct else "TIE")
+        
+        # Special case: Generic "Judge, Court of Criminal Appeals" without place number
+        # Use CCA 7 data from VTD (the one that has competitive vote totals)
+        if 'CCA 7' in ellis_2018:
+            for cat in results['results_by_year'].get(2018, {}):
+                if cat == 'judicial':
+                    for key, contest in results['results_by_year'][2018][cat].items():
+                        if key == 'cca_judge' and contest.get('contest_name') == 'Judge, Court of Criminal Appeals':
+                            if 'ELLIS' in contest['results']:
+                                print(f"  Updating Ellis County for Judge, Court of Criminal Appeals (2018) from VTD 'CCA 7'")
+                                contest['results']['ELLIS'].update(ellis_2018['CCA 7'])
+                                # Recalculate competitiveness
+                                ellis_result = contest['results']['ELLIS']
+                                if ellis_result['total_votes'] > 0:
+                                    dem_pct = (ellis_result['dem_votes'] / ellis_result['total_votes']) * 100
+                                    rep_pct = (ellis_result['rep_votes'] / ellis_result['total_votes']) * 100
+                                    margin_pct = abs(dem_pct - rep_pct)
+                                    winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
+                                    
+                                    if margin_pct >= 40:
+                                        category_name = "Annihilation"
+                                    elif margin_pct >= 30:
+                                        category_name = "Dominant"
+                                    elif margin_pct >= 20:
+                                        category_name = "Stronghold"
+                                    elif margin_pct >= 10:
+                                        category_name = "Safe"
+                                    elif margin_pct >= 5.5:
+                                        category_name = "Likely"
+                                    elif margin_pct >= 1:
+                                        category_name = "Lean"
+                                    elif margin_pct >= 0.5:
+                                        category_name = "Tilt"
+                                    else:
+                                        category_name = "Tossup"
+                                        winner = "Tossup"
+                                    
+                                    color = get_competitiveness_color(category_name, winner)
+                                    code = "TOSSUP" if winner == "Tossup" else f"{'R' if winner == 'Republican' else 'D'}_{category_name.upper()}"
+                                    
+                                    ellis_result["competitiveness"] = {
+                                        "category": category_name,
+                                        "party": winner,
+                                        "code": code,
+                                        "color": color,
+                                        "description": f"{category_name} {winner}" if winner != "Tossup" else "Tossup"
+                                    }
+                                    ellis_result["margin"] = ellis_result["dem_votes"] - ellis_result["rep_votes"]
+                                    ellis_result["margin_pct"] = round(margin_pct, 2)
+                                    ellis_result["winner"] = "DEM" if dem_pct > rep_pct else ("REP" if rep_pct > dem_pct else "TIE")
+    
+    # Aggregate Ellis County for 2014
+    ellis_2014 = aggregate_ellis_from_vtd(2014, 'Election_Data/2014_General_Election_Returns-aligned.csv')
+    if ellis_2014:
+        # Create a normalized lookup for ellis results
+        normalized_ellis_map = {}
+        for vtd_office_name in ellis_2014.keys():
+            norm_name = normalize_office_name(vtd_office_name)
+            normalized_ellis_map[norm_name] = vtd_office_name
+        
+        for cat in results['results_by_year'].get(2014, {}):
+            for key, contest in results['results_by_year'][2014][cat].items():
+                contest_name = contest.get('contest_name', key)
+                
+                # Try to find matching Ellis data using normalized name
+                if contest_name in normalized_ellis_map and 'ELLIS' in contest['results']:
+                    vtd_office = normalized_ellis_map[contest_name]
+                    print(f"  Updating Ellis County for {contest_name} (2014) from VTD '{vtd_office}'")
+                    contest['results']['ELLIS'].update(ellis_2014[vtd_office])
+                    # Recalculate competitiveness after update
+                    ellis_result = contest['results']['ELLIS']
+                    if ellis_result['total_votes'] > 0:
+                        dem_pct = (ellis_result['dem_votes'] / ellis_result['total_votes']) * 100
+                        rep_pct = (ellis_result['rep_votes'] / ellis_result['total_votes']) * 100
+                        margin_pct = abs(dem_pct - rep_pct)
+                        winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
+                        
+                        if margin_pct >= 40:
+                            category_name = "Annihilation"
+                        elif margin_pct >= 30:
+                            category_name = "Dominant"
+                        elif margin_pct >= 20:
+                            category_name = "Stronghold"
+                        elif margin_pct >= 10:
+                            category_name = "Safe"
+                        elif margin_pct >= 5.5:
+                            category_name = "Likely"
+                        elif margin_pct >= 1:
+                            category_name = "Lean"
+                        elif margin_pct >= 0.5:
+                            category_name = "Tilt"
+                        else:
+                            category_name = "Tossup"
+                            winner = "Tossup"
+                        
+                        color = get_competitiveness_color(category_name, winner)
+                        code = "TOSSUP" if winner == "Tossup" else f"{'R' if winner == 'Republican' else 'D'}_{category_name.upper()}"
+                        
+                        ellis_result["competitiveness"] = {
+                            "category": category_name,
+                            "party": winner,
+                            "code": code,
+                            "color": color,
+                            "description": f"{category_name} {winner}" if winner != "Tossup" else "Tossup"
+                        }
+                        ellis_result["margin"] = ellis_result["dem_votes"] - ellis_result["rep_votes"]
+                        ellis_result["margin_pct"] = round(margin_pct, 2)
+                        ellis_result["winner"] = "DEM" if dem_pct > rep_pct else ("REP" if rep_pct > dem_pct else "TIE")
+
+    # --- FIX EL PASO COUNTY AGGREGATION FOR 2014 AND 2018 ---
+    print("\nFixing El Paso County aggregation from VTD data...")
+    
+    # Aggregate El Paso County for 2018
+    elpaso_2018 = aggregate_elpaso_from_vtd(2018, 'Election_Data/2018_General_Election_Returns-aligned.csv')
+    if elpaso_2018:
+        # Create a normalized lookup for elpaso results
+        normalized_elpaso_map = {}
+        for vtd_office_name in elpaso_2018.keys():
+            norm_name = normalize_office_name(vtd_office_name)
+            normalized_elpaso_map[norm_name] = vtd_office_name
+        
+        for cat in results['results_by_year'].get(2018, {}):
+            for key, contest in results['results_by_year'][2018][cat].items():
+                contest_name = contest.get('contest_name', key)
+                
+                # Try to find matching El Paso data using normalized name
+                if contest_name in normalized_elpaso_map and 'EL PASO' in contest['results']:
+                    vtd_office = normalized_elpaso_map[contest_name]
+                    print(f"  Updating El Paso County for {contest_name} (2018) from VTD '{vtd_office}'")
+                    contest['results']['EL PASO'].update(elpaso_2018[vtd_office])
+                    # Recalculate competitiveness after update
+                    elpaso_result = contest['results']['EL PASO']
+                    if elpaso_result['total_votes'] > 0:
+                        dem_pct = (elpaso_result['dem_votes'] / elpaso_result['total_votes']) * 100
+                        rep_pct = (elpaso_result['rep_votes'] / elpaso_result['total_votes']) * 100
+                        margin_pct = abs(dem_pct - rep_pct)
+                        winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
+                        
+                        if margin_pct >= 40:
+                            category_name = "Annihilation"
+                        elif margin_pct >= 30:
+                            category_name = "Dominant"
+                        elif margin_pct >= 20:
+                            category_name = "Stronghold"
+                        elif margin_pct >= 10:
+                            category_name = "Safe"
+                        elif margin_pct >= 5.5:
+                            category_name = "Likely"
+                        elif margin_pct >= 1:
+                            category_name = "Lean"
+                        elif margin_pct >= 0.5:
+                            category_name = "Tilt"
+                        else:
+                            category_name = "Tossup"
+                            winner = "Tossup"
+                        
+                        color = get_competitiveness_color(category_name, winner)
+                        code = "TOSSUP" if winner == "Tossup" else f"{'R' if winner == 'Republican' else 'D'}_{category_name.upper()}"
+                        
+                        elpaso_result["competitiveness"] = {
+                            "category": category_name,
+                            "party": winner,
+                            "code": code,
+                            "color": color,
+                            "description": f"{category_name} {winner}" if winner != "Tossup" else "Tossup"
+                        }
+                        elpaso_result["margin"] = elpaso_result["dem_votes"] - elpaso_result["rep_votes"]
+                        elpaso_result["margin_pct"] = round(margin_pct, 2)
+                        elpaso_result["winner"] = "DEM" if dem_pct > rep_pct else ("REP" if rep_pct > dem_pct else "TIE")
+        
+        # Special case: Generic "Judge, Court of Criminal Appeals" without place number
+        if 'CCA 7' in elpaso_2018:
+            for cat in results['results_by_year'].get(2018, {}):
+                if cat == 'judicial':
+                    for key, contest in results['results_by_year'][2018][cat].items():
+                        if key == 'cca_judge' and contest.get('contest_name') == 'Judge, Court of Criminal Appeals':
+                            if 'EL PASO' in contest['results']:
+                                print(f"  Updating El Paso County for Judge, Court of Criminal Appeals (2018) from VTD 'CCA 7'")
+                                contest['results']['EL PASO'].update(elpaso_2018['CCA 7'])
+                                # Recalculate competitiveness
+                                elpaso_result = contest['results']['EL PASO']
+                                if elpaso_result['total_votes'] > 0:
+                                    dem_pct = (elpaso_result['dem_votes'] / elpaso_result['total_votes']) * 100
+                                    rep_pct = (elpaso_result['rep_votes'] / elpaso_result['total_votes']) * 100
+                                    margin_pct = abs(dem_pct - rep_pct)
+                                    winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
+                                    
+                                    if margin_pct >= 40:
+                                        category_name = "Annihilation"
+                                    elif margin_pct >= 30:
+                                        category_name = "Dominant"
+                                    elif margin_pct >= 20:
+                                        category_name = "Stronghold"
+                                    elif margin_pct >= 10:
+                                        category_name = "Safe"
+                                    elif margin_pct >= 5.5:
+                                        category_name = "Likely"
+                                    elif margin_pct >= 1:
+                                        category_name = "Lean"
+                                    elif margin_pct >= 0.5:
+                                        category_name = "Tilt"
+                                    else:
+                                        category_name = "Tossup"
+                                        winner = "Tossup"
+                                    
+                                    color = get_competitiveness_color(category_name, winner)
+                                    code = "TOSSUP" if winner == "Tossup" else f"{'R' if winner == 'Republican' else 'D'}_{category_name.upper()}"
+                                    
+                                    elpaso_result["competitiveness"] = {
+                                        "category": category_name,
+                                        "party": winner,
+                                        "code": code,
+                                        "color": color,
+                                        "description": f"{category_name} {winner}" if winner != "Tossup" else "Tossup"
+                                    }
+                                    elpaso_result["margin"] = elpaso_result["dem_votes"] - elpaso_result["rep_votes"]
+                                    elpaso_result["margin_pct"] = round(margin_pct, 2)
+                                    elpaso_result["winner"] = "DEM" if dem_pct > rep_pct else ("REP" if rep_pct > dem_pct else "TIE")
+    
+    # Aggregate El Paso County for 2014
+    elpaso_2014 = aggregate_elpaso_from_vtd(2014, 'Election_Data/2014_General_Election_Returns-aligned.csv')
+    if elpaso_2014:
+        # Create a normalized lookup for elpaso results
+        normalized_elpaso_map = {}
+        for vtd_office_name in elpaso_2014.keys():
+            norm_name = normalize_office_name(vtd_office_name)
+            normalized_elpaso_map[norm_name] = vtd_office_name
+        
+        for cat in results['results_by_year'].get(2014, {}):
+            for key, contest in results['results_by_year'][2014][cat].items():
+                contest_name = contest.get('contest_name', key)
+                
+                # Try to find matching El Paso data using normalized name
+                if contest_name in normalized_elpaso_map and 'EL PASO' in contest['results']:
+                    vtd_office = normalized_elpaso_map[contest_name]
+                    print(f"  Updating El Paso County for {contest_name} (2014) from VTD '{vtd_office}'")
+                    contest['results']['EL PASO'].update(elpaso_2014[vtd_office])
+                    # Recalculate competitiveness after update
+                    elpaso_result = contest['results']['EL PASO']
+                    if elpaso_result['total_votes'] > 0:
+                        dem_pct = (elpaso_result['dem_votes'] / elpaso_result['total_votes']) * 100
+                        rep_pct = (elpaso_result['rep_votes'] / elpaso_result['total_votes']) * 100
+                        margin_pct = abs(dem_pct - rep_pct)
+                        winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
+                        
+                        if margin_pct >= 40:
+                            category_name = "Annihilation"
+                        elif margin_pct >= 30:
+                            category_name = "Dominant"
+                        elif margin_pct >= 20:
+                            category_name = "Stronghold"
+                        elif margin_pct >= 10:
+                            category_name = "Safe"
+                        elif margin_pct >= 5.5:
+                            category_name = "Likely"
+                        elif margin_pct >= 1:
+                            category_name = "Lean"
+                        elif margin_pct >= 0.5:
+                            category_name = "Tilt"
+                        else:
+                            category_name = "Tossup"
+                            winner = "Tossup"
+                        
+                        color = get_competitiveness_color(category_name, winner)
+                        code = "TOSSUP" if winner == "Tossup" else f"{'R' if winner == 'Republican' else 'D'}_{category_name.upper()}"
+                        
+                        elpaso_result["competitiveness"] = {
+                            "category": category_name,
+                            "party": winner,
+                            "code": code,
+                            "color": color,
+                            "description": f"{category_name} {winner}" if winner != "Tossup" else "Tossup"
+                        }
+                        elpaso_result["margin"] = elpaso_result["dem_votes"] - elpaso_result["rep_votes"]
+                        elpaso_result["margin_pct"] = round(margin_pct, 2)
+                        elpaso_result["winner"] = "DEM" if dem_pct > rep_pct else ("REP" if rep_pct > dem_pct else "TIE")
+
+    # --- CALCULATE STATEWIDE TOTALS ---
+    print("\nCalculating statewide totals for all contests...")
+    for year_str, categories in results['results_by_year'].items():
+        for category_name, contests in categories.items():
+            for contest_key, contest_data in contests.items():
+                if 'results' not in contest_data:
+                    continue
+                
+                # Sum all county results
+                total_dem = 0
+                total_rep = 0
+                total_other = 0
+                total_votes = 0
+                
+                for county, county_data in contest_data['results'].items():
+                    if county != 'statewide':  # Skip if statewide already exists
+                        total_dem += county_data.get('dem_votes', 0)
+                        total_rep += county_data.get('rep_votes', 0)
+                        total_other += county_data.get('other_votes', 0)
+                        total_votes += county_data.get('total_votes', 0)
+                
+                # Add statewide totals
+                contest_data['statewide_totals'] = {
+                    'dem_votes': total_dem,
+                    'rep_votes': total_rep,
+                    'other_votes': total_other,
+                    'total_votes': total_votes
+                }
+                
+                # Calculate statewide margin and winner
+                if total_votes > 0:
+                    dem_pct = (total_dem / total_votes) * 100
+                    rep_pct = (total_rep / total_votes) * 100
+                    margin = total_dem - total_rep
+                    margin_pct = abs(dem_pct - rep_pct)
+                    winner = 'DEM' if dem_pct > rep_pct else ('REP' if rep_pct > dem_pct else 'TIE')
+                    
+                    contest_data['statewide_totals']['margin'] = margin
+                    contest_data['statewide_totals']['margin_pct'] = round(margin_pct, 2)
+                    contest_data['statewide_totals']['winner'] = winner
+    
+    print("  Statewide totals calculated for all contests")
 
     # Save to JSON file
     output_file = data_dir / "texas_election_results.json"
@@ -1288,20 +1763,6 @@ def process_texas_election_data():
     print(f"   Total contests: {sum(len(year_data) for year_data in results['results_by_year'].values())}")
     
     return results
-
-
-def process_texas_election_data():
-    """
-    Process Texas election CSV files and create a JSON structure
-    similar to the NC map format
-    """
-    # ... [existing code above] ...
-    results = {
-        "metadata": {
-            # ... [metadata definition] ...
-        },
-        "results_by_year": {}
-    }
 
 if __name__ == "__main__":
     print("Texas Election Data Processor")
