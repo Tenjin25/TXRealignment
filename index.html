@@ -1328,6 +1328,16 @@ function mergeGeoElectionData(boundaryGeoJSON, electionData, countyKey='County',
               else if (/NC SUPREME/.test(cn)) officeLabel = 'NC Supreme Court';
               else if (/COURT OF APPEALS|APPEALS|COURT OF APPEALS JUDGE/.test(cn) && !/CRIMINAL/.test(cn)) officeLabel = 'Court of Appeals';
             }
+              // Exclude uncontested races (where DEM votes = 0 and REP votes > 0)
+              if (contest && contest.statewide_totals) {
+                const st = contest.statewide_totals;
+                const demVotes = st.dem_votes || 0;
+                const repVotes = st.rep_votes || 0;
+                // Skip if uncontested (no Democratic candidate)
+                if (demVotes === 0 && repVotes > 0) {
+                  return;
+                }
+              }
 
             // Only include allowed offices (also accept Statewide Offices and Judicial categories if they map)
             if (!allowedOffices.includes(officeLabel)) {
