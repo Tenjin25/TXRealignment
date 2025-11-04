@@ -3011,20 +3011,10 @@ function filterValidContests(contests) {
       }
       
       // Throttle updates to prevent performance issues
-      // Immediately clear contest name if TN or Tennessee is present in the contest label
+      // Immediately clear contest name to prevent flash
       const contestNameEl = document.getElementById('contest-name');
-      if (contestNameEl && value) {
-        let label = '';
-        if (value.includes('||')) {
-          const parts = value.split('||');
-          label = parts[2] || '';
-        } else {
-          const parts = value.split('-');
-          label = parts[2] || '';
-        }
-        if (/\bTN\b/i.test(label) || /\bTennessee\b/i.test(label)) {
-          contestNameEl.textContent = '';
-        }
+      if (contestNameEl) {
+        contestNameEl.textContent = '';
       }
       updateTimeout = setTimeout(() => {
         if (!value) {
@@ -3090,8 +3080,17 @@ function filterValidContests(contests) {
         // Update contest name in statewide section
         const contestNameEl = document.getElementById('contest-name');
         if (contestNameEl && currentContest && currentContest.data) {
-          const contestName = currentContest.data.contest_name || '';
-          contestNameEl.textContent = `${normalizeContestName(contestName)} (${currentContest.year})`;
+          let label = currentContest.data.contest_name || '';
+          // Remove TN prefix and any contest containing 'TN' or 'Tennessee' (case-insensitive)
+          if (/\bTN\b/i.test(label) || /\bTennessee\b/i.test(label)) {
+            label = '';
+          } else {
+            // Normalize the contest name first, then remove state prefixes
+            label = normalizeContestName(label);
+            label = label.replace(/^TN\s*/i, '').replace(/^NC\s*/i, '');
+          }
+          // Only set textContent once with the fully processed label
+          contestNameEl.textContent = label ? `${label} (${currentContest.year})` : '';
         }
         
         // Update sidebar if a county is currently selected
