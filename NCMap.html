@@ -2971,15 +2971,9 @@ function filterValidContests(contests) {
 
         // Update contest name in statewide section
         const contestNameEl = document.getElementById('contest-name');
-        if (contestNameEl) {
-          let label = (currentContest && currentContest.data && currentContest.data.contest_name) ? currentContest.data.contest_name : '';
-          // Remove TN prefix and any contest containing 'TN' (case-insensitive)
-          if (/\bTN\b/i.test(label) || /\bTennessee\b/i.test(label)) {
-            contestNameEl.textContent = '';
-          } else {
-            label = label.replace(/^TN\s*/i, '').replace(/^NC\s*/i, '');
-            contestNameEl.textContent = `${label} (${currentContest ? currentContest.year : ''})`;
-          }
+        if (contestNameEl && currentContest && currentContest.data) {
+          const contestName = currentContest.data.contest_name || '';
+          contestNameEl.textContent = `${normalizeContestName(contestName)} (${currentContest.year})`;
         }
         
         // Update sidebar if a county is currently selected

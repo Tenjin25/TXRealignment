@@ -49,9 +49,9 @@ def get_full_candidate_name(last_name, year, office, party):
     if year == 2024:
         if 'president' in office_lower:
             if last_lower in ['harris', 'kamala']:
-                return 'Kamala Harris'
+                return 'Kamala D. Harris'
             elif last_lower in ['trump', 'donald']:
-                return 'Donald Trump'
+                return 'Donald J. Trump'
         elif 'sen' in office_lower:  # Matches "U.S. Sen", "Senate", etc.
             if last_lower in ['allred', 'colin']:
                 return 'Colin Allred'
