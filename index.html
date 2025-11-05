@@ -1035,8 +1035,8 @@ document.addEventListener('DOMContentLoaded', function() {
         counties: './TX_Data/tl_2020_48_county20/tl_2020_48_county20.geojson',
         election: './data/texas_election_results.json'
       },
-      center: [-99.5, 31.8], // Center shifted north to show panhandle
-      zoom: 5.3, // Looser zoom to show all counties
+      center: [-99.0, 31.5], // Texas geographic center
+      zoom: 4.8, // Much wider zoom to ensure all counties visible
     };
 
     mapboxgl.accessToken = CONFIG.mapboxToken;
