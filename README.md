@@ -18,7 +18,11 @@ An interactive visualization of Texas election results from 2000-2024, showcasin
 ## Features
 
 - **13 Years of Data**: 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024
-- **28 Contests**: Presidential, Senate, and statewide offices
+- **124 Total Contests**: 113 contested races (91.1% with both Democratic and Republican candidates)
+  - Presidential (5), U.S. Senate (6), Gubernatorial (5)
+  - Statewide offices (Lieutenant Governor, Attorney General, Comptroller, Land Commissioner, Agriculture Commissioner, Railroad Commissioner)
+  - Judicial races (Supreme Court, Court of Criminal Appeals)
+  - Includes 11 uncontested races (Republican-only in select judicial contests)
 - **Complete Coverage**: 
   - 2024: President, U.S. Senate, Railroad Commissioner (all 254 counties)
   - 2022: Governor, Lieutenant Governor, Attorney General, Comptroller, Land Commissioner, Agriculture Commissioner, Railroad Commissioner
