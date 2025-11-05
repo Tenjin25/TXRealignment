@@ -2843,23 +2843,6 @@ function toggleSidebar() {
         // Initialize county search (autocomplete & zoom) once counties are added
         try { if (typeof setupCountySearch === 'function') setupCountySearch(); } catch(e) { console.warn('setupCountySearch failed', e); }
         
-        // Correct Mapbox GL JS bounds for North Carolina
-        var ncBounds = [
-          [-84.3219, 33.8423], // Southwest corner [minLon, minLat]
-          [-75.4606, 36.5880]  // Northeast corner [maxLon, maxLat]
-        ];
-        // Efficient direct centering/zooming without recursion
-        if (ncBounds && typeof ncBounds.getCenter === 'function' && typeof map.setCenter === 'function' && typeof map.setZoom === 'function') {
-          var center = ncBounds.getCenter();
-          map.setCenter([center.lng, center.lat]);
-          map.setZoom(7);
-        } else if (ncBounds && typeof map.setView === 'function') {
-          var center = ncBounds.getCenter();
-          map.setView([center.lat, center.lng], 7);
-        } else {
-          map.flyTo({ center: [-99.9, 31.0], zoom: 5.5, offset: [120, 0] });
-        }
-        
         // Load election data with timeout
         const electionController = new AbortController();
         const electionTimeoutId = setTimeout(() => electionController.abort(), 15000); // 15 second timeout
