@@ -1388,12 +1388,17 @@ def process_texas_election_data():
     results = clean_nan(results)
 
     # Add first names for Railroad Commissioner candidates in 2020
-    rc_2020 = results["results_by_year"].get(2020, {}).get("statewide", {}).get("railroad_commissioner", {}).get("results", {})
-    for county, res in rc_2020.items():
-        # Force update for all 2020 Railroad Commissioner results
-        if str(res.get("contest", "")).lower() == "railroad commissioner" and int(res.get("year", 0)) == 2020:
-            res["dem_candidate"] = "Chrysta Castaneda"
-            res["rep_candidate"] = "Jim Wright"
+    rc_2020_contest = results["results_by_year"].get(2020, {}).get("statewide", {}).get("railroad_commissioner", {})
+    if rc_2020_contest:
+        # Update the top-level candidate names
+        rc_2020_contest["dem_candidate"] = "Chrysta Castañeda"
+        rc_2020_contest["rep_candidate"] = "Jim Wright"
+        
+        # Also update in individual county results
+        for county, res in rc_2020_contest.get("results", {}).items():
+            if str(res.get("contest", "")).lower() == "railroad commissioner" and int(res.get("year", 0)) == 2020:
+                res["dem_candidate"] = "Chrysta Castañeda"
+                res["rep_candidate"] = "Jim Wright"
     
     # --- FIX ELLIS COUNTY AGGREGATION FOR 2014 AND 2018 ---
     print("\nFixing Ellis County aggregation from VTD data...")
