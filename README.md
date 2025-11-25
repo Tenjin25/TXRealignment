@@ -51,25 +51,25 @@ The map uses color-coded categories to represent the competitiveness and margin 
 ### 2024 Presidential Examples by Category
 
 **Democratic Counties:**
-- **Travis County** (Austin): D+40.05% = "Annihilation Democratic"
+- **Travis County** (Austin): D+39.08% = "Dominant Democratic"
 - **Dallas County**: D+22.62% = "Stronghold Democratic"
 - **El Paso County**: D+15.32% = "Safe Democratic"
 - **Bexar County** (San Antonio): D+9.86% = "Likely Democratic"
-- **Harris County** (Houston): D+5.62% = "Likely Democratic"
-- **Hays County** (San Marcos): D+5.72% = "Likely Democratic"
-- **Fort Bend County**: D+1.62% = "Lean Democratic"
+- **Harris County** (Houston): D+5.53% = "Likely Democratic"
+- **Hays County** (San Marcos): D+5.63% = "Likely Democratic"
+- **Fort Bend County**: D+1.57% = "Lean Democratic"
 
 **Competitive:**
-- **Williamson County** (Austin suburbs): R+2.49% = "Lean Republican"
-- **Webb County** (Laredo): R+2.14% = "Lean Republican"
-- **Hidalgo County** (McAllen): R+2.90% = "Lean Republican"
+- **Williamson County** (Austin suburbs): R+2.34% = "Lean Republican"
+- **Webb County** (Laredo): R+2.12% = "Lean Republican"
+- **Hidalgo County** (McAllen): R+2.87% = "Lean Republican"
 
 **Republican Counties:**
-- **Tarrant County** (Fort Worth): R+5.19% = "Likely Republican"
-- **Cameron County** (Brownsville): R+5.84% = "Likely Republican"
-- **Collin County** (Plano): R+11.45% = "Safe Republican"
-- **Denton County**: R+13.35% = "Safe Republican"
-- **Montgomery County** (The Woodlands): R+45.91% = "Annihilation Republican"
+- **Tarrant County** (Fort Worth): R+5.12% = "Likely Republican"
+- **Cameron County** (Brownsville): R+5.79% = "Likely Republican"
+- **Collin County** (Plano): R+11.09% = "Safe Republican"
+- **Denton County**: R+13.14% = "Safe Republican"
+- **Montgomery County** (The Woodlands): R+45.46% = "Annihilation Republican"
 - **King County** (smallest county): R+90%+ = "Annihilation Republican" (extreme)
 
 ## Political Trends & Analysis
@@ -81,8 +81,8 @@ Texas has maintained its Republican lean in presidential elections, but with sig
 **Statewide Margins:**
 - **2000**: Bush (R+21.91%) - 3,799,639 vs Gore 2,433,746
 - **2008**: McCain (R+11.87%) - Lowest Republican margin until 2020
-- **2020**: Trump (R+5.66%) - Closest race since 1996
-- **2024**: Trump (R+13.88%) - Republican rebound
+- **2020**: Trump (R+5.58%) - Closest race since 1996
+- **2024**: Trump (R+13.68%) - Republican rebound
 
 **24-Year Net Shift**: Despite Trump's 2024 improvement, the state has shifted 8.03 points more Republican since 2000, driven largely by dramatic realignment in South Texas and rural areas offsetting urban Democratic gains.
 
@@ -107,7 +107,7 @@ The most dramatic political shift in Texas has occurred along the Rio Grande Val
 While rural and border counties trended Republican, major metros shifted Democratic:
 
 **Urban Blue Shift:**
-- **Travis County** (Austin): R+5.9% (2000) → **D+40.1%** (2024) - 46-point Democratic swing
+- **Travis County** (Austin): R+5.9% (2000) → **D+39.08%** (2024) - 45-point Democratic swing
 - **Dallas County**: R+7.9% (2000) → **D+22.6%** (2024) - 30-point swing
 - **Harris County** (Houston): R+3.5% (2000) → **D+5.6%** (2024)
 
