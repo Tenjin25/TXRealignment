@@ -1014,7 +1014,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="legend-item"><div class="legend-color" style="background: #fb6a4a;"></div>Likely Republican (5.50-9.99%)</div>
             <div class="legend-item"><div class="legend-color" style="background: #fcae91;"></div>Lean Republican (1.00-5.49%)</div>
             <div class="legend-item"><div class="legend-color" style="background: #fee8c8;"></div>Tilt Republican (0.50-0.99%)</div>
-            <div class="legend-item"><div class="legend-color" style="background: #f7f7f7; border: 1px solid #999;"></div>Tossup (>0.50%)</div>
+            <div class="legend-item"><div class="legend-color" style="background: #f7f7f7; border: 1px solid #999;"></div>Tossup (>0.5%)</div>
             <div class="legend-item"><div class="legend-color" style="background: #e1f5fe;"></div>Tilt Democratic (0.50-0.99%)</div>
             <div class="legend-item"><div class="legend-color" style="background: #c6dbef;"></div>Lean Democratic (1.00-5.49%)</div>
             <div class="legend-item"><div class="legend-color" style="background: #9ecae1;"></div>Likely Democratic (5.50-9.99%)</div>
@@ -1041,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     mapboxgl.accessToken = CONFIG.mapboxToken;
 
-    const map = new mapboxgl.Map({ container: 'map', style: 'mapbox://styles/mapbox/streets-v12', center: CONFIG.center, zoom: CONFIG.zoom });
+    const map = new mapboxgl.Map({ container: 'map', style: 'mapbox://styles/mapbox/outdoors-v12', center: CONFIG.center, zoom: CONFIG.zoom });
 
     let electionData = null;
     let currentContest = null;
@@ -2169,7 +2169,7 @@ function toggleSidebar() {
           id: 'county-fill', 
           type: 'fill', 
           source: 'counties', 
-          paint: { 'fill-color': '#e0e0e0', 'fill-opacity': 0.38 } 
+          paint: { 'fill-color': '#e0e0e0', 'fill-opacity': 0.75 } 
         });
         map.addLayer({ 
           id: 'county-stroke', 
@@ -3106,7 +3106,7 @@ function filterValidContests(contests) {
     if (map && map.getLayer('county-fill')) {
       map.setPaintProperty('county-fill', 'fill-color', colorExpression);
       // Also ensure proper opacity and visibility
-      map.setPaintProperty('county-fill', 'fill-opacity', 0.88);
+      map.setPaintProperty('county-fill', 'fill-opacity', 0.75);
       map.setLayoutProperty('county-fill', 'visibility', 'visible');
     }
 
