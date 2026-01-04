@@ -94,7 +94,33 @@ def get_full_candidate_name(last_name, year, office, party):
     
     # 2022 candidates
     elif year == 2022:
-        if 'land' in office_lower:
+        if 'governor' in office_lower and 'lieutenant' not in office_lower:
+            if last_lower == 'abbott':
+                return 'Greg Abbott'
+            elif last_lower == "o'rourke" or 'rourke' in last_lower:
+                return "Beto O'Rourke"
+            elif last_lower == 'tippetts':
+                return 'Mark Tippetts'
+        elif 'lieutenant' in office_lower:
+            if last_lower == 'patrick':
+                return 'Dan Patrick'
+            elif last_lower == 'collier':
+                return 'Mike Collier'
+            elif last_lower == 'steele':
+                return 'Shanna Steele'
+        elif 'attorney' in office_lower:
+            if last_lower == 'paxton':
+                return 'Ken Paxton'
+            elif last_lower == 'garza':
+                return 'Rochelle Garza'
+            elif last_lower == 'ash':
+                return 'Mark Ash'
+        elif 'comptroller' in office_lower:
+            if last_lower == 'hegar':
+                return 'Glenn Hegar'
+            elif last_lower == 'dudding':
+                return 'Janet Dudding'
+        elif 'land' in office_lower:
             if last_lower == 'buckingham':
                 return 'Dawn Buckingham'
             elif last_lower == 'kleberg':

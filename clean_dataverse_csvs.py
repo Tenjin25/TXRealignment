@@ -50,8 +50,22 @@ def clean_dataverse_csv(input_path, output_path, year):
     # Clean up county names (title case, strip whitespace)
     result['county'] = result['county'].str.strip().str.title()
     
-    # Clean up office names (title case)
-    result['office'] = result['office'].str.strip().str.title()
+    # Normalize office names to match expected values in processor
+    office_map = {
+        'US PRESIDENT': 'President',
+        'US SENATE': 'U.S. Senate',
+        'US HOUSE': 'U.S. House',
+        'RAILROAD COMMISSIONER': 'Railroad Commissioner',
+        'STATE SUPREME COURT JUSTICE': 'Supreme Court Justice',
+        'COURT OF CRIMINAL APPEALS': 'Court of Criminal Appeals',
+        'COURT OF CRIMINAL APPEALS PRESIDING JUDGE': 'Presiding Judge, Court of Criminal Appeals',
+        'STATE BOARD OF EDUCATION': 'State Board of Education',
+        'STATE SENATE': 'State Senate',
+        'STATE HOUSE': 'State House',
+        'COURT OF APPEALS': 'Court of Appeals'
+    }
+    result['office'] = result['office'].str.strip().str.upper()
+    result['office'] = result['office'].map(lambda x: office_map.get(x, x.title()) if pd.notna(x) else x)
     
     # Clean up candidate names (strip whitespace)
     result['candidate'] = result['candidate'].str.strip()
