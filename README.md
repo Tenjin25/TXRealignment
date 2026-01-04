@@ -18,11 +18,10 @@ An interactive visualization of Texas election results from 2000-2024, showcasin
 ## Features
 
 - **13 Years of Data**: 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022, 2024
-- **124 Total Contests**: 113 contested races (91.1% with both Democratic and Republican candidates)
+- **120 Total Contests**: Comprehensive coverage of federal, statewide, and judicial races
   - Presidential (5), U.S. Senate (6), Gubernatorial (5)
   - Statewide offices (Lieutenant Governor, Attorney General, Comptroller, Land Commissioner, Agriculture Commissioner, Railroad Commissioner)
   - Judicial races (Supreme Court, Court of Criminal Appeals)
-  - Includes 11 uncontested races (Republican-only in select judicial contests)
 - **Complete Coverage**: 
   - 2024: President, U.S. Senate, Railroad Commissioner (all 254 counties)
   - 2022: Governor, Lieutenant Governor, Attorney General, Comptroller, Land Commissioner, Agriculture Commissioner, Railroad Commissioner
@@ -39,14 +38,16 @@ The map uses color-coded categories to represent the competitiveness and margin 
 
 ### The 8-Level Scale (Applied to Both Parties)
 
-- **Tossup (±0.5% margin):** The margin is less than half a percentage point, indicating a true battleground with no clear favorite.
-- **Tilt (0.5-1% margin):** Extremely competitive, with only a slight edge for the winner.
-- **Lean (1-5.5% margin):** The area is competitive, with a modest advantage for the winning party.
-- **Likely (5.5-10% margin):** The winning party has a clear advantage, but the area could become competitive under the right circumstances.
-- **Safe (10-20% margin):** One party wins by 10-20 percentage points. The area is considered safe, but not impenetrable.
-- **Stronghold (20-30% margin):** One party wins by 20-30 percentage points. A reliably safe county for the winning party.
-- **Dominant (30-40% margin):** One party wins by 30-40 percentage points. A very safe seat, but slightly less extreme than Annihilation.
+- **Tossup (<0.50% margin):** The margin is less than half a percentage point, indicating a true battleground with no clear favorite.
+- **Tilt (0.50-0.99% margin):** Extremely competitive, with only a slight edge for the winner.
+- **Lean (1.00-5.49% margin):** The area is competitive, with a modest advantage for the winning party.
+- **Likely (5.50-9.99% margin):** The winning party has a clear advantage, but the area could become competitive under the right circumstances.
+- **Safe (10.00-19.99% margin):** One party wins by 10-20 percentage points. The area is considered safe, but not impenetrable.
+- **Stronghold (20.00-29.99% margin):** One party wins by 20-30 percentage points. A reliably safe county for the winning party.
+- **Dominant (30.00-39.99% margin):** One party wins by 30-40 percentage points. A very safe seat, but slightly less extreme than Annihilation.
 - **Annihilation (40%+ margin):** One party wins by more than 40 percentage points. Indicates a landslide victory and a safe stronghold for the winning party.
+
+*Note: Explicit gaps between categories (e.g., 0.99% to 1.00%, 5.49% to 5.50%) mitigate fringe range issues by ensuring borderline cases fall clearly into one category.*
 
 ### 2024 Presidential Examples by Category
 
@@ -416,16 +417,16 @@ Full candidate names are provided for all major party candidates, including:
 - **County boundaries**: U.S. Census Bureau TIGER/Line Shapefiles (2020) - 254 Texas counties
 - **Election results 2000-2018**: OpenElections Project (https://github.com/openelections)
 - **Election results 2020**: VTD-aligned precinct-level data, aggregated to county level
-- **Election results 2022**: Texas Legislative Council VTD-aligned data (`2022_General_Election_Returns-aligned.csv`)
-  - Supplemented with statewide races (Land Commissioner, Agriculture Commissioner, Railroad Commissioner)
-- **Election results 2024**: Texas Legislative Council. (2024). *Comprehensive Election Datasets - Compressed Format: 2024 General Election Returns*. Texas Open Data Portal. Retrieved from https://data.capitol.texas.gov/dataset/comprehensive-election-datasets-compressed-format/resource/e1cd6332-6a7a-4c78-ad2a-852268f6c7a2
-  - VTD-aligned CSV format (`2024_General_Election_Returns-Aligned.csv`)
+- **Election results 2022**: MIT Election Data and Science Lab. (2023). *U.S. President, Senate, House, Governor, and State Legislative Precinct-Level Election Results 2012-2022*. Harvard Dataverse. https://doi.org/10.7910/DVN/PSKDUJ
+  - Cleaned and converted to OpenElections format via `clean_dataverse_csvs.py`
+- **Election results 2024**: MIT Election Data and Science Lab. (2024). *2024 U.S. General Election Precinct-Level Returns*. Harvard Dataverse. https://doi.org/10.7910/DVN/UINHER
+  - Cleaned and converted to OpenElections format via `clean_dataverse_csvs.py`
 
 ## Files
 
 ### Core Application
 - `index.html` - Main map interface with Mapbox GL visualization
-- `data/texas_election_results.json` - Processed election results (28 contests across 13 years)
+- `data/texas_election_results.json` - Processed election results (120 contests across 13 years)
 - `TX_Data/tl_2020_48_county20.geojson` - County boundary data (254 Texas counties)
 
 ### Data Processing
@@ -433,7 +434,11 @@ Full candidate names are provided for all major party candidates, including:
   - County name normalization (handles 18 multi-word counties)
   - Contest name normalization (standardizes office names)
   - Candidate name resolution (full names for all major candidates)
-  - Supplemental data integration for 2022 statewide races
+  - Refined competitiveness categorization with explicit gaps
+- `clean_dataverse_csvs.py` - Converts MIT Dataverse CSVs to OpenElections format
+  - Aggregates precinct data to county level
+  - Standardizes party names (REPUBLICAN → REP, DEMOCRAT → DEM)
+  - Normalizes column names and formats
 
 ### Verification Scripts
 - `verify_all.py` - Comprehensive data quality verification
