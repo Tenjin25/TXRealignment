@@ -368,6 +368,27 @@ The VTD CSV files correctly label rows as 'ELLIS' for Ellis County and 'EL PASO'
 
 **Solution Implemented:**
 - Corrected `aggregate_ellis_from_vtd()` to read rows labeled 'ELLIS'
+
+### Data Source Migration: MIT Dataverse CSVs (January 2026)
+
+**Change Implemented:**
+Migrated 2022 and 2024 election data from Texas Legislative Council sources to MIT Election Data and Science Lab Harvard Dataverse datasets.
+
+**Improvements:**
+- Standardized data format across all recent elections
+- Enhanced data quality with peer-reviewed academic sources
+- Increased total contests from 113 to 120 (additional judicial races)
+- Improved candidate name consistency with full names in source data
+
+**Technical Updates:**
+- Created `clean_dataverse_csvs.py` to convert dataverse format to OpenElections standard
+- Updated party name normalization (REPUBLICAN → REP, DEMOCRAT → DEM)
+- Enhanced candidate name resolution to handle full names instead of just surnames
+- Refined competitiveness scale with explicit gaps (0.50-0.99%, 1.00-5.49%, etc.) to eliminate ambiguity at category boundaries
+
+**New Data Sources:**
+- 2022: MIT Election Data and Science Lab, Harvard Dataverse (DOI: 10.7910/DVN/PSKDUJ)
+- 2024: MIT Election Data and Science Lab, Harvard Dataverse (DOI: 10.7910/DVN/UINHER)
 - Corrected `aggregate_elpaso_from_vtd()` to read rows labeled 'EL PASO'
 - Re-ran comprehensive verification across all 2014 and 2018 contests
 
