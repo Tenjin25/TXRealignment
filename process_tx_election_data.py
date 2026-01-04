@@ -1,7 +1,6 @@
 import pandas as pd
 import json
 import os
-import re
 from pathlib import Path
 from collections import defaultdict
 
@@ -36,52 +35,22 @@ def normalize_county_name(name):
     
     return county_mappings.get(name, name)
 
-def normalize_candidate_label(candidate_name, office_name):
-    """Clean candidate labels for display and matching."""
-    if pd.isna(candidate_name) or not candidate_name:
-        return None
-
-    cleaned = str(candidate_name).strip()
-    cleaned = re.sub(r"\s*\(I\)\s*", "", cleaned).strip()
-    cleaned = re.sub(r"\s+", " ", cleaned)
-
-    office_lower = str(office_name).lower() if office_name else ""
-    if "president" in office_lower and "/" in cleaned:
-        # Keep only top-of-ticket name.
-        cleaned = cleaned.split("/", 1)[0].strip()
-
-    if cleaned.isupper():
-        cleaned = cleaned.title()
-
-    # Fix known mixed-case given names that title-casing gets wrong.
-    token_overrides = {
-        "Dasean": "DaSean",
-    }
-    cleaned = " ".join(token_overrides.get(tok, tok) for tok in cleaned.split(" "))
-
-    return cleaned
-
 def get_full_candidate_name(last_name, year, office, party):
     """Get full candidate name from last name for major races"""
     if pd.isna(last_name) or not last_name:
         return None
     
-    last_name = normalize_candidate_label(last_name, office)
-    if not last_name:
-        return None
-
+    last_name = str(last_name).strip()
     office_lower = office.lower()
-    candidate_lower = last_name.lower()
-    name_tokens = re.findall(r"[a-z]+", candidate_lower)
-    last_lower = name_tokens[-1] if name_tokens else candidate_lower
+    last_lower = last_name.lower()
     party_upper = str(party).upper() if party else ''
     
     # 2024 candidates
     if year == 2024:
         if 'president' in office_lower:
-            if 'harris' in candidate_lower or 'kamala' in candidate_lower:
+            if 'harris' in last_lower or 'kamala' in last_lower:
                 return 'Kamala D. Harris'
-            elif 'trump' in candidate_lower or 'donald' in candidate_lower:
+            elif 'trump' in last_lower or 'donald' in last_lower:
                 return 'Donald J. Trump'
         elif 'sen' in office_lower:  # Matches "U.S. Sen", "Senate", etc.
             if last_lower in ['allred', 'colin']:
@@ -278,6 +247,10 @@ def aggregate_single_precinct_file(filepath, year):
         # Normalize column names to lowercase
         df.columns = df.columns.str.lower().str.strip()
         
+        # Standardize county column name (dataverse uses 'county_name', others use 'county')
+        if 'county_name' in df.columns and 'county' not in df.columns:
+            df['county'] = df['county_name']
+        
         # Ensure county column exists
         if 'county' not in df.columns:
             print(f"  Warning: No 'county' column in {filepath}")
@@ -287,15 +260,25 @@ def aggregate_single_precinct_file(filepath, year):
         if 'name' in df.columns and 'candidate' not in df.columns:
             df['candidate'] = df['name']
         
-        # Normalize party abbreviations to full names for consistency
-        party_map = {
-            'D': 'DEM',
-            'R': 'REP',
-            'L': 'LIB',
-            'G': 'GRN',
-            'W': 'WI'
-        }
-        df['party'] = df['party'].map(lambda x: party_map.get(str(x).strip(), str(x).strip()) if pd.notna(x) else x)
+        # Standardize party column (dataverse uses 'party_simplified', others use 'party')
+        if 'party_simplified' in df.columns and 'party' not in df.columns:
+            df['party'] = df['party_simplified']
+        
+        # Normalize party abbreviations to standard format for consistency
+        if 'party' in df.columns:
+            party_map = {
+                'D': 'DEM',
+                'R': 'REP',
+                'L': 'LIB',
+                'G': 'GRN',
+                'W': 'WI',
+                'REPUBLICAN': 'REP',
+                'DEMOCRAT': 'DEM',
+                'LIBERTARIAN': 'LIB',
+                'GREEN': 'GRN',
+                'OTHER': 'OTH'
+            }
+            df['party'] = df['party'].map(lambda x: party_map.get(str(x).strip().upper(), str(x).strip().upper()) if pd.notna(x) else x)
         
         # Convert votes to numeric (fixes string concatenation bug)
         df['votes'] = pd.to_numeric(df['votes'], errors='coerce').fillna(0).astype(int)
@@ -409,9 +392,9 @@ def normalize_office_name(office_name):
     if 'president' in low:
         return 'President'
 
-    # U.S. Senate variations (including spaced forms like "U. S. SENATOR")
-    compact = ''.join(ch for ch in low if ch.isalnum())
-    if compact.startswith('ussen') or 'ussenate' in compact or 'ussenator' in compact:
+    # U.S. Senate variations
+    # match 'u.s. sen', 'u.s. senate', 'us sen', 'us senate', 'u.s. sen.' etc.
+    if ('u.s.' in low or 'us ' in low or low.startswith('u.s') or low.startswith('us')) and 'sen' in low:
         return 'U.S. Senate'
 
     # Governor / statewide common names
@@ -631,71 +614,71 @@ def process_texas_election_data():
                         },
                         {
                             "category": "Dominant",
-                            "range": "R+30-40%",
+                            "range": "R+30.00-39.99%",
                             "color": "#a50f15"
                         },
                         {
                             "category": "Stronghold",
-                            "range": "R+20-30%",
+                            "range": "R+20.00-29.99%",
                             "color": "#cb181d"
                         },
                         {
                             "category": "Safe",
-                            "range": "R+10-20%",
+                            "range": "R+10.00-19.99%",
                             "color": "#ef3b2c"
                         },
                         {
                             "category": "Likely",
-                            "range": "R+5.5-10%",
+                            "range": "R+5.50-9.99%",
                             "color": "#fb6a4a"
                         },
                         {
                             "category": "Lean",
-                            "range": "R+1-5.5%",
+                            "range": "R+1.00-5.49%",
                             "color": "#fcae91"
                         },
                         {
                             "category": "Tilt",
-                            "range": "R+0.5-1%",
+                            "range": "R+0.50-0.99%",
                             "color": "#fee8c8"
                         }
                     ],
                     "Tossup": [
                         {
                             "category": "Tossup",
-                            "range": "±0.5%",
+                            "range": "<0.50%",
                             "color": "#f7f7f7"
                         }
                     ],
                     "Democratic": [
                         {
                             "category": "Tilt",
-                            "range": "D+0.5-1%",
+                            "range": "D+0.50-0.99%",
                             "color": "#e1f5fe"
                         },
                         {
                             "category": "Lean",
-                            "range": "D+1-5.5%",
+                            "range": "D+1.00-5.49%",
                             "color": "#c6dbef"
                         },
                         {
                             "category": "Likely",
-                            "range": "D+5.5-10%",
+                            "range": "D+5.50-9.99%",
                             "color": "#9ecae1"
                         },
                         {
                             "category": "Safe",
-                            "range": "D+10-20%",
+                            "range": "D+10.00-19.99%",
                             "color": "#6baed6"
                         },
                         {
                             "category": "Stronghold",
-                            "range": "D+20-30%",
+                            "range": "D+20.00-29.99%",
                             "color": "#3182bd"
                         },
                         {
                             "category": "Dominant",
-                            "range": "D+30-40%",
+                            "range": "D+30.00-39.99%",
                             "color": "#08519c"
                         },
                         {
@@ -734,9 +717,9 @@ def process_texas_election_data():
         2014: "2014/counties/20141104__tx__general__county.csv",
         2016: "20161108__tx__general__county.csv",
         2018: "20181106__tx__general__county.csv",
-        2020: "20201103__tx__general__county__from_clarity.csv",  # Clarity county-level export
-        2022: "20221108__tx__general__county__from_clarity.csv",  # Clarity county-level export
-        2024: "20241105__tx__general__county__from_clarity.csv",  # Clarity county-level export
+        2020: "20201103__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
+        2022: "20221108__tx__general__county.csv",  # Cleaned dataverse county data
+        2024: "20241105__tx__general__county.csv",  # Cleaned dataverse county data
     }
     
     # Supplemental files to add additional races (processed after main files)
@@ -752,9 +735,9 @@ def process_texas_election_data():
         2014: "2014_General_Election_Returns-aligned.csv",  # Add judicial races
         2016: "20161108__tx__general__county.csv",  # Add judicial races
         2018: "20181106__tx__general__county.csv",  # Add judicial races
-        2020: "20201103__tx__general__county__from_clarity.csv",  # Add judicial races and statewide from Clarity export
-        2022: "20221108__tx__general__county__from_clarity.csv",  # Add judicial races and statewide from Clarity export
-        2024: "20241105__tx__general__county__from_clarity.csv",  # Add judicial races and statewide from Clarity export
+        2020: "2020_General_Election_Returns-aligned.csv",  # Add judicial races and RR Comm
+        2022: "20221108__tx__general__county.csv",  # Cleaned dataverse county data
+        2024: "20241105__tx__general__county.csv",  # Cleaned dataverse county data
     }
     
     # Process each year
@@ -976,7 +959,7 @@ def process_texas_election_data():
                         margin_pct = abs(dem_pct - rep_pct)
                         winner = 'Democratic' if dem_pct > rep_pct else 'Republican'
                         
-                        # Determine category
+                        # Determine category (with gaps to mitigate fringe range issues)
                         if margin_pct >= 40:
                             category_name = "Annihilation"
                         elif margin_pct >= 30:
@@ -987,7 +970,7 @@ def process_texas_election_data():
                             category_name = "Safe"
                         elif margin_pct >= 5.5:
                             category_name = "Likely"
-                        elif margin_pct >= 1:
+                        elif margin_pct >= 1.0:
                             category_name = "Lean"
                         elif margin_pct >= 0.5:
                             category_name = "Tilt"
@@ -1075,22 +1058,35 @@ def process_texas_election_data():
             # Normalize column names
             df.columns = df.columns.str.lower().str.strip()
             
+            # Standardize county column name (dataverse uses 'county_name', others use 'county')
+            if 'county_name' in df.columns and 'county' not in df.columns:
+                df['county'] = df['county_name']
+            
             # Ensure year data exists
             if year not in results["results_by_year"]:
                 results["results_by_year"][year] = {}
                 if year not in results["metadata"]["years_covered"]:
                     results["metadata"]["years_covered"].append(year)
             
-            # Normalize party abbreviations
+            # Standardize party column (dataverse uses 'party_simplified', others use 'party')
+            if 'party_simplified' in df.columns and 'party' not in df.columns:
+                df['party'] = df['party_simplified']
+            
+            # Normalize party abbreviations to standard format
             if 'party' in df.columns:
                 party_map = {
                     'D': 'DEM',
                     'R': 'REP',
                     'L': 'LIB',
                     'G': 'GRN',
-                    'W': 'WI'
+                    'W': 'WI',
+                    'REPUBLICAN': 'REP',
+                    'DEMOCRAT': 'DEM',
+                    'LIBERTARIAN': 'LIB',
+                    'GREEN': 'GRN',
+                    'OTHER': 'OTH'
                 }
-                df['party'] = df['party'].map(lambda x: party_map.get(str(x).strip(), str(x).strip()) if pd.notna(x) else x)
+                df['party'] = df['party'].map(lambda x: party_map.get(str(x).strip().upper(), str(x).strip().upper()) if pd.notna(x) else x)
             
             # Normalize candidate column
             if 'name' in df.columns and 'candidate' not in df.columns:
@@ -1827,4 +1823,4 @@ if __name__ == "__main__":
     print("Texas Election Data Processor")
     print("=" * 50)
     results = process_texas_election_data()
-    print("\nProcessing complete!")
+    print("\n✅ Processing complete!")
