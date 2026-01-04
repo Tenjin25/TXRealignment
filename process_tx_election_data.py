@@ -603,7 +603,7 @@ def process_texas_election_data():
             "source": "OpenElections",
             "years_covered": [],
             "focus": "Clean geographic political patterns",
-            "processed_date": "2025-11-02",
+            "processed_date": "2026-01-04",
             "categorization_system": {
                 "competitiveness_scale": {
                     "Republican": [
