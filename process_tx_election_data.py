@@ -651,7 +651,7 @@ def process_texas_election_data():
     results = {
         "metadata": {
             "state": "Texas",
-            "source": "OpenElections",
+            "source": "OpenElections and Texas Secretary of State",
             "years_covered": [],
             "focus": "Clean geographic political patterns",
             "processed_date": "2026-02-20",
