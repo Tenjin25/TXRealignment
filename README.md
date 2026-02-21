@@ -392,6 +392,16 @@ Migrated 2022 and 2024 election data from Texas Legislative Council sources to M
 - Corrected `aggregate_elpaso_from_vtd()` to read rows labeled 'EL PASO'
 - Re-ran comprehensive verification across all 2014 and 2018 contests
 
+### Official Source Update (February 21, 2026)
+
+**Change Implemented:**
+Switched 2020, 2022, and 2024 election inputs to official Texas Secretary of State data sources.
+
+### County Label Toggle (January 2026)
+
+**UI Enhancement:**
+Added a map control button to turn county labels on and off.
+
 **Verification Results:**
 - ✅ Ellis County now correctly shows Republican majorities (e.g., 2018 US Senate: 68% REP)
 - ✅ El Paso County now correctly shows Democratic majorities (e.g., 2018 US Senate: 75% DEM)
@@ -437,11 +447,9 @@ Full candidate names are provided for all major party candidates, including:
 
 - **County boundaries**: U.S. Census Bureau TIGER/Line Shapefiles (2020) - 254 Texas counties
 - **Election results 2000-2018**: OpenElections Project (https://github.com/openelections)
-- **Election results 2020**: VTD-aligned precinct-level data, aggregated to county level
-- **Election results 2022**: MIT Election Data and Science Lab. (2023). *U.S. President, Senate, House, Governor, and State Legislative Precinct-Level Election Results 2012-2022*. Harvard Dataverse. https://doi.org/10.7910/DVN/PSKDUJ
-  - Cleaned and converted to OpenElections format via `clean_dataverse_csvs.py`
-- **Election results 2024**: MIT Election Data and Science Lab. (2024). *2024 U.S. General Election Precinct-Level Returns*. Harvard Dataverse. https://doi.org/10.7910/DVN/UINHER
-  - Cleaned and converted to OpenElections format via `clean_dataverse_csvs.py`
+- **Election results 2020**: Texas Secretary of State official county-level results (adopted February 21, 2026)
+- **Election results 2022**: Texas Secretary of State official county-level results (adopted February 21, 2026)
+- **Election results 2024**: Texas Secretary of State official county-level results (adopted February 21, 2026)
 
 ## Files
 
