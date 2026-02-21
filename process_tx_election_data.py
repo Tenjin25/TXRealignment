@@ -651,16 +651,16 @@ def process_texas_election_data():
     results = {
         "metadata": {
             "state": "Texas",
-            "source": "OpenElections",
+            "source": "OpenElections and Texas Secretary of State",
             "years_covered": [],
             "focus": "Clean geographic political patterns",
-            "processed_date": "2026-01-04",
+            "processed_date": "2026-02-20",
             "categorization_system": {
                 "competitiveness_scale": {
                     "Republican": [
                         {
                             "category": "Annihilation",
-                            "range": "R+40%+",
+                            "range": "R+≥40%",
                             "color": "#67000d"
                         },
                         {
@@ -734,7 +734,7 @@ def process_texas_election_data():
                         },
                         {
                             "category": "Annihilation",
-                            "range": "D+40%+",
+                            "range": "D+≥40.00%",
                             "color": "#08306b"
                         }
                     ]
