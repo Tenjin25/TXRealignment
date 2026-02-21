@@ -1,6 +1,7 @@
 import pandas as pd
 import json
 import os
+import re
 from pathlib import Path
 from collections import defaultdict
 
@@ -35,22 +36,46 @@ def normalize_county_name(name):
     
     return county_mappings.get(name, name)
 
+def normalize_candidate_label(candidate_name, office_name):
+    """Clean candidate labels for display and matching."""
+    if pd.isna(candidate_name) or not candidate_name:
+        return None
+
+    cleaned = str(candidate_name).strip()
+    cleaned = re.sub(r"\s*\(I\)\s*", "", cleaned).strip()
+    cleaned = re.sub(r"\s+", " ", cleaned)
+
+    office_lower = str(office_name).lower() if office_name else ""
+    if "president" in office_lower and "/" in cleaned:
+        # Keep only top-of-ticket name.
+        cleaned = cleaned.split("/", 1)[0].strip()
+
+    if cleaned.isupper():
+        cleaned = cleaned.title()
+
+    return cleaned
+
 def get_full_candidate_name(last_name, year, office, party):
     """Get full candidate name from last name for major races"""
     if pd.isna(last_name) or not last_name:
         return None
     
-    last_name = str(last_name).strip()
+    last_name = normalize_candidate_label(last_name, office)
+    if not last_name:
+        return None
+
     office_lower = office.lower()
-    last_lower = last_name.lower()
+    candidate_lower = last_name.lower()
+    name_tokens = re.findall(r"[a-z]+", candidate_lower)
+    last_lower = name_tokens[-1] if name_tokens else candidate_lower
     party_upper = str(party).upper() if party else ''
     
     # 2024 candidates
     if year == 2024:
         if 'president' in office_lower:
-            if 'harris' in last_lower or 'kamala' in last_lower:
+            if 'harris' in candidate_lower or 'kamala' in candidate_lower:
                 return 'Kamala D. Harris'
-            elif 'trump' in last_lower or 'donald' in last_lower:
+            elif 'trump' in candidate_lower or 'donald' in candidate_lower:
                 return 'Donald J. Trump'
         elif 'sen' in office_lower:  # Matches "U.S. Sen", "Senate", etc.
             if last_lower in ['allred', 'colin']:
@@ -418,9 +443,9 @@ def normalize_office_name(office_name):
     if 'president' in low:
         return 'President'
 
-    # U.S. Senate variations
-    # match 'u.s. sen', 'u.s. senate', 'us sen', 'us senate', 'u.s. sen.' etc.
-    if ('u.s.' in low or 'us ' in low or low.startswith('u.s') or low.startswith('us')) and 'sen' in low:
+    # U.S. Senate variations (including spaced forms like "U. S. SENATOR")
+    compact = ''.join(ch for ch in low if ch.isalnum())
+    if compact.startswith('ussen') or 'ussenate' in compact or 'ussenator' in compact:
         return 'U.S. Senate'
 
     # Governor / statewide common names
@@ -743,9 +768,9 @@ def process_texas_election_data():
         2014: "2014/counties/20141104__tx__general__county.csv",
         2016: "20161108__tx__general__county.csv",
         2018: "20181106__tx__general__county.csv",
-        2020: "20201103__tx__general__county_from_precinct.csv",  # Aggregated from precinct data
-        2022: "20221108__tx__general__county.csv",  # Cleaned dataverse county data
-        2024: "20241105__tx__general__county.csv",  # Cleaned dataverse county data
+        2020: "20201103__tx__general__county__from_clarity.csv",  # Clarity county-level export
+        2022: "20221108__tx__general__county__from_clarity.csv",  # Clarity county-level export
+        2024: "20241105__tx__general__county__from_clarity.csv",  # Clarity county-level export
     }
     
     # Supplemental files to add additional races (processed after main files)
@@ -761,9 +786,9 @@ def process_texas_election_data():
         2014: "2014_General_Election_Returns-aligned.csv",  # Add judicial races
         2016: "20161108__tx__general__county.csv",  # Add judicial races
         2018: "20181106__tx__general__county.csv",  # Add judicial races
-        2020: "2020_General_Election_Returns-aligned.csv",  # Add judicial races and RR Comm
-        2022: "20221108__tx__general__county.csv",  # Cleaned dataverse county data
-        2024: "20241105__tx__general__county.csv",  # Cleaned dataverse county data
+        2020: "20201103__tx__general__county__from_clarity.csv",  # Add judicial races and statewide from Clarity export
+        2022: "20221108__tx__general__county__from_clarity.csv",  # Add judicial races and statewide from Clarity export
+        2024: "20241105__tx__general__county__from_clarity.csv",  # Add judicial races and statewide from Clarity export
     }
     
     # Process each year
@@ -1849,4 +1874,4 @@ if __name__ == "__main__":
     print("Texas Election Data Processor")
     print("=" * 50)
     results = process_texas_election_data()
-    print("\n✅ Processing complete!")
+    print("\nProcessing complete!")
