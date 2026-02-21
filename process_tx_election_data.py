@@ -53,6 +53,12 @@ def normalize_candidate_label(candidate_name, office_name):
     if cleaned.isupper():
         cleaned = cleaned.title()
 
+    # Fix known mixed-case given names that title-casing gets wrong.
+    token_overrides = {
+        "Dasean": "DaSean",
+    }
+    cleaned = " ".join(token_overrides.get(tok, tok) for tok in cleaned.split(" "))
+
     return cleaned
 
 def get_full_candidate_name(last_name, year, office, party):
